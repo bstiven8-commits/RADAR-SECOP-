@@ -1,0 +1,32 @@
+name: Radar SECOP II
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: radar
+  cancel-in-progress: false
+jobs:
+  revisar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Revisar SECOP II
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          WATCHES_JSON: ${{ secrets.WATCHES_JSON }}
+          SOCRATA_TOKEN: ${{ secrets.SOCRATA_TOKEN }}
+        run: python watcher.py
+      - name: Guardar estado
+        run: |
+          git config user.name "radar-bot"
+          git config user.email "radar-bot@users.noreply.github.com"
+          git add state.json
+          git diff --cached --quiet || (git commit -m "estado" && git push)
