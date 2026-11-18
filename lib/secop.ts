@@ -68,7 +68,8 @@ const urlOf = (v: unknown): string | null => {
 
 function where(src: SingleSource, f: Filters): string {
   const c = DATASETS[src];
-  const parts: string[] = [];
+  // Sin fecha de publicación son borradores no públicos: se excluyen y evitan que lideren el orden por fecha.
+  const parts: string[] = [`${c.fecha} IS NOT NULL`];
   if (f.modalidad) parts.push(`${c.modalidad} = '${esc(f.modalidad)}'`);
   if (f.estado) parts.push(`${c.estado} = '${esc(f.estado)}'`);
   if (f.departamento) parts.push(`${c.departamento} = '${esc(f.departamento)}'`);
