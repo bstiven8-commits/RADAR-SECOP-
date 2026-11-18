@@ -1,0 +1,23 @@
+name: Revisar alarmas
+# Reemplaza al radar.yml anterior: en vez de correr watcher.py, solo despierta a la app.
+# Vercel Hobby limita sus cron a 1 vez al día; GitHub Actions permite más frecuencia gratis.
+on:
+  schedule:
+    - cron: "*/30 * * * *" # cada 30 min; los datos abiertos se actualizan a lo sumo cada pocas horas
+  workflow_dispatch: {}
+concurrency:
+  group: alarmas
+  cancel-in-progress: false
+jobs:
+  revisar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Llamar /api/cron
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl --fail --silent --show-error --max-time 120 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$APP_URL/api/cron"

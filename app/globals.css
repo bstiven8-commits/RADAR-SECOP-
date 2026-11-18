@@ -1,0 +1,36 @@
+:root {
+  --bg: #f7f8fa;
+  --card: #fff;
+  --text: #1c2024;
+  --muted: #667085;
+  --line: #e4e7ec;
+  --brand: #1d4ed8;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #0f1318; --card: #171c23; --text: #e8ebf0; --muted: #98a2b3; --line: #2a313b; --brand: #6c9bff; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+a { color: var(--brand); }
+.wrap { max-width: 1000px; margin: 0 auto; padding: 16px; }
+header.top { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 8px 0 16px; }
+header.top h1 { font-size: 22px; margin: 0; }
+.authbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-height: 36px; }
+.muted { color: var(--muted); font-size: 13px; }
+input, select, button { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--text); }
+button { background: var(--brand); color: #fff; border-color: var(--brand); cursor: pointer; }
+button:disabled { opacity: .6; cursor: default; }
+button.ghost { background: transparent; color: var(--text); border-color: var(--line); }
+button.link { background: none; border: 0; color: var(--brand); padding: 0; }
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+.filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.filters label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+.filters .wide { grid-column: 1 / -1; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
+.item { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+.item .meta { font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px; }
+.item h3 { margin: 6px 0; font-size: 15px; }
+.badge { background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 0 8px; }
+.error { color: #b42318; }
+.ok { color: #067647; }
+@media (max-width: 600px) { .wrap { padding: 12px; } }
