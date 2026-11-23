@@ -69,3 +69,9 @@ drop policy if exists "alarms_delete_own" on public.alarms;
 create policy "alarms_delete_own" on public.alarms
   for delete using (auth.uid() = user_id);
 -- Las altas y cambios de alarmas pasan por /api/alarms (valida límites del plan).
+
+-- Frecuencia de alarmas (instalaciones nuevas: ya incluido; las existentes usan supabase/002_frecuencia.sql)
+alter table public.alarms add column if not exists frequency text not null default 'daily';
+alter table public.alarms add column if not exists last_checked_at timestamptz;
+alter table public.alarms drop constraint if exists alarms_frequency_check;
+alter table public.alarms add constraint alarms_frequency_check check (frequency in ('daily', 'hourly', '15min'));

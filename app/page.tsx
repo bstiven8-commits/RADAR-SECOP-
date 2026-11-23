@@ -4,6 +4,7 @@ import Link from "next/link";
 import AuthBar from "@/components/AuthBar";
 import { useSession } from "@/lib/use-session";
 import type { Proceso } from "@/lib/secop";
+import { FRECUENCIAS, type Frecuencia } from "@/lib/plans";
 
 const NOMBRE = process.env.NEXT_PUBLIC_APP_NAME ?? "Radar SECOP";
 
@@ -41,6 +42,8 @@ export default function Home() {
   const [error, setError] = useState("");
   const [alarmName, setAlarmName] = useState("");
   const [alarmMsg, setAlarmMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [frecuencia, setFrecuencia] = useState<Frecuencia>("daily");
+  const [permitidas, setPermitidas] = useState<Frecuencia[]>(["daily"]);
 
   const set = <K extends keyof F>(k: K, v: F[K]) => setF((x) => ({ ...x, [k]: v }));
 
@@ -52,6 +55,15 @@ export default function Home() {
       .then((d) => !d.error && setFacets(d))
       .catch(() => {});
   }, [f.source]);
+
+  // Frecuencias que permite el plan del usuario
+  useEffect(() => {
+    if (!session) return;
+    fetch("/api/alarms", { headers: { Authorization: `Bearer ${session.access_token}` } })
+      .then((r) => r.json())
+      .then((d) => Array.isArray(d.frecuencias) && setPermitidas(d.frecuencias))
+      .catch(() => {});
+  }, [session]);
 
   const buscar = useCallback(
     async (pagina: number) => {
@@ -83,10 +95,10 @@ export default function Home() {
     const r = await fetch("/api/alarms", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-      body: JSON.stringify({ name, filters }),
+      body: JSON.stringify({ name, filters, frequency: frecuencia }),
     });
     const d = await r.json();
-    setAlarmMsg(r.ok ? { ok: true, text: "Alarma creada. Te escribiremos cuando aparezcan procesos nuevos." } : { ok: false, text: d.error });
+    setAlarmMsg(r.ok ? { ok: true, text: `Alarma creada (${FRECUENCIAS[frecuencia].etiqueta.toLowerCase()}). Te escribiremos cuando aparezcan procesos nuevos.` } : { ok: false, text: d.error });
     if (r.ok) setAlarmName("");
   }
 
@@ -144,6 +156,13 @@ export default function Home() {
         <div className="panel">
           <div className="actions" style={{ marginTop: 0 }}>
             <input placeholder="Nombre de la alarma" value={alarmName} onChange={(e) => setAlarmName(e.target.value)} />
+            <select aria-label="Frecuencia de la alarma" value={frecuencia} onChange={(e) => setFrecuencia(e.target.value as Frecuencia)}>
+              {(Object.keys(FRECUENCIAS) as Frecuencia[]).map((k) => (
+                <option key={k} value={k} disabled={!permitidas.includes(k)}>
+                  {FRECUENCIAS[k].etiqueta}{permitidas.includes(k) ? "" : " — plan Pro"}
+                </option>
+              ))}
+            </select>
             <button type="button" onClick={crearAlarma}>🔔 Avisarme de procesos nuevos con estos filtros</button>
           </div>
           {alarmMsg && <p className={alarmMsg.ok ? "ok" : "error"} style={{ marginBottom: 0 }}>{alarmMsg.text}</p>}

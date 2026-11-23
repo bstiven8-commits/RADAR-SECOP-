@@ -3,12 +3,14 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import AuthBar from "@/components/AuthBar";
 import { useSession } from "@/lib/use-session";
+import { FRECUENCIAS, type Frecuencia } from "@/lib/plans";
 
 interface Alarm {
   id: string;
   name: string;
   filters: Record<string, string>;
   active: boolean;
+  frequency: Frecuencia;
 }
 
 const ETIQUETAS: Record<string, string> = {
@@ -19,7 +21,7 @@ const PLAT: Record<string, string> = { secop2: "SECOP II", secop1: "SECOP I", bo
 export default function Alarmas() {
   const { session, ready } = useSession();
   const [alarms, setAlarms] = useState<Alarm[]>([]);
-  const [info, setInfo] = useState({ plan: "free", limite: 0 });
+  const [info, setInfo] = useState<{ plan: string; limite: number; frecuencias: Frecuencia[] }>({ plan: "free", limite: 0, frecuencias: ["daily"] });
   const [error, setError] = useState("");
 
   const auth = useCallback(() => ({ Authorization: `Bearer ${session?.access_token}` }), [session]);
@@ -30,13 +32,19 @@ export default function Alarmas() {
     const d = await r.json();
     if (!r.ok) return setError(d.error);
     setAlarms(d.alarms);
-    setInfo({ plan: d.plan, limite: d.limite });
+    setInfo({ plan: d.plan, limite: d.limite, frecuencias: d.frecuencias ?? ["daily"] });
   }, [session, auth]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
   async function alternar(a: Alarm) {
     await fetch("/api/alarms", { method: "PATCH", headers: { ...auth(), "Content-Type": "application/json" }, body: JSON.stringify({ id: a.id, active: !a.active }) });
+    cargar();
+  }
+  async function cambiarFrecuencia(a: Alarm, frequency: Frecuencia) {
+    setError("");
+    const r = await fetch("/api/alarms", { method: "PATCH", headers: { ...auth(), "Content-Type": "application/json" }, body: JSON.stringify({ id: a.id, frequency }) });
+    if (!r.ok) setError((await r.json()).error ?? "No se pudo cambiar la frecuencia");
     cargar();
   }
   async function borrar(a: Alarm) {
@@ -68,6 +76,13 @@ export default function Alarmas() {
                 ))}
               </div>
               <div className="actions">
+                <select aria-label="Frecuencia" value={a.frequency} onChange={(e) => cambiarFrecuencia(a, e.target.value as Frecuencia)}>
+                  {(Object.keys(FRECUENCIAS) as Frecuencia[]).map((k) => (
+                    <option key={k} value={k} disabled={!info.frecuencias.includes(k) && k !== a.frequency}>
+                      {FRECUENCIAS[k].etiqueta}{info.frecuencias.includes(k) ? "" : " — plan Pro"}
+                    </option>
+                  ))}
+                </select>
                 <button className="ghost" onClick={() => alternar(a)}>{a.active ? "Pausar" : "Reactivar"}</button>
                 <button className="ghost" onClick={() => borrar(a)}>Eliminar</button>
               </div>
