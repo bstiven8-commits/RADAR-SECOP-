@@ -9,8 +9,8 @@ export const metadata = { title: `Política de tratamiento de datos — ${NOMBRE
 export default function Privacidad() {
   return (
     <div className="wrap" style={{ maxWidth: 760 }}>
-      <p><Link href="/">← Volver</Link></p>
-      <h1>Política de tratamiento de datos personales</h1>
+      <Link href="/" className="volver">Volver a la búsqueda</Link>
+      <h1 className="titulo">Política de tratamiento de datos personales</h1>
       <p className="muted">Última actualización: noviembre de 2026</p>
 
       <h3>1. Responsable</h3>

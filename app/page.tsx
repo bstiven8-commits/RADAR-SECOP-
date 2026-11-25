@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import AuthBar from "@/components/AuthBar";
+import { Bell, Logo } from "@/components/Icons";
 import { useSession } from "@/lib/use-session";
 import type { Proceso } from "@/lib/secop";
 import { FRECUENCIAS, type Frecuencia } from "@/lib/plans";
@@ -22,6 +23,15 @@ const VACIO: F = { source: "secop2", q: "", modalidad: "", estado: "", departame
 const cop = (n: number | null) =>
   n == null ? "—" : new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
 const dia = (s: string | null) => (s ? s.slice(0, 10) : "—");
+
+// Solo para el indicador visual del estado; el texto del estado siempre se muestra
+function tonoEstado(e: string | null): "abierto" | "cerrado" | "adjudicado" | "" {
+  const t = (e ?? "").toLowerCase();
+  if (/borrador|cancel|desiert|suspend|anulad|terminad|liquidad/.test(t)) return "cerrado";
+  if (/adjudic|celebrad|firmad/.test(t)) return "adjudicado";
+  if (/abiert|public|convoc|present|recep|evalua|proceso/.test(t)) return "abierto";
+  return "";
+}
 
 function query(f: F, page?: number) {
   const p = new URLSearchParams();
@@ -46,6 +56,7 @@ export default function Home() {
   const [permitidas, setPermitidas] = useState<Frecuencia[]>(["daily"]);
 
   const set = <K extends keyof F>(k: K, v: F[K]) => setF((x) => ({ ...x, [k]: v }));
+  const extrasActivos = [f.modalidad, f.estado, f.departamento, f.desde, f.hasta].filter(Boolean).length;
 
   // Los selectores se cargan desde los datos reales, para que coincidan exactamente con SECOP
   useEffect(() => {
@@ -105,57 +116,84 @@ export default function Home() {
   return (
     <div className="wrap">
       <header className="top">
-        <h1>{NOMBRE}</h1>
+        <Link href="/" className="brand" aria-label={`${NOMBRE}, inicio`}>
+          <Logo />
+          <span>{NOMBRE}</span>
+        </Link>
         <AuthBar />
       </header>
 
-      <form className="panel" onSubmit={(e) => { e.preventDefault(); buscar(0); }}>
-        <div className="filters">
-          <label>Plataforma
-            <select value={f.source} onChange={(e) => set("source", e.target.value as F["source"])}>
-              <option value="secop2">SECOP II</option>
-              <option value="secop1">SECOP I</option>
-              <option value="both">Ambas</option>
-            </select>
-          </label>
-          <label>Modalidad
-            <select value={f.modalidad} onChange={(e) => set("modalidad", e.target.value)}>
-              <option value="">Todas</option>
-              {facets.modalidades.map((m) => <option key={m}>{m}</option>)}
-            </select>
-          </label>
-          <label>Estado
-            <select value={f.estado} onChange={(e) => set("estado", e.target.value)}>
-              <option value="">Todos</option>
-              {facets.estados.map((m) => <option key={m}>{m}</option>)}
-            </select>
-          </label>
-          <label>Departamento
-            <select value={f.departamento} onChange={(e) => set("departamento", e.target.value)}>
-              <option value="">Todos</option>
-              {facets.departamentos.map((m) => <option key={m}>{m}</option>)}
-            </select>
-          </label>
-          <label>Publicado desde
-            <input type="date" value={f.desde} onChange={(e) => set("desde", e.target.value)} />
-          </label>
-          <label>Publicado hasta
-            <input type="date" value={f.hasta} onChange={(e) => set("hasta", e.target.value)} />
-          </label>
-          <label className="wide">Palabra clave (objeto del proceso)
-            <input value={f.q} placeholder="ej. software, dotación, interventoría" onChange={(e) => set("q", e.target.value)} />
-          </label>
-        </div>
-        <div className="actions">
+      <h1 className="lead">Procesos de contratación pública, SECOP I y II</h1>
+      {!searched && (
+        <p className="sub">Busca por palabra clave, modalidad o departamento. Crea una alarma y te escribimos cuando aparezcan procesos nuevos.</p>
+      )}
+
+      <form className="buscador" onSubmit={(e) => { e.preventDefault(); buscar(0); }}>
+        <div className="fila-principal">
+          <input
+            className="q"
+            type="search"
+            aria-label="Palabra clave (objeto del proceso)"
+            value={f.q}
+            placeholder="Palabra clave: software, dotación, interventoría"
+            onChange={(e) => set("q", e.target.value)}
+          />
+          <select aria-label="Plataforma" value={f.source} onChange={(e) => set("source", e.target.value as F["source"])}>
+            <option value="secop2">SECOP II</option>
+            <option value="secop1">SECOP I</option>
+            <option value="both">Ambas</option>
+          </select>
           <button disabled={loading}>{loading && page === 0 ? "Buscando…" : "Buscar"}</button>
-          <button type="button" className="ghost" onClick={() => { setF({ ...VACIO, source: f.source }); setItems([]); setSearched(false); }}>Limpiar</button>
         </div>
+
+        <details className="mas">
+          <summary>
+            Más filtros
+            {extrasActivos > 0 && <span className="n">{extrasActivos}</span>}
+          </summary>
+          <div className="filtros">
+            <label>Modalidad
+              <select value={f.modalidad} onChange={(e) => set("modalidad", e.target.value)}>
+                <option value="">Todas</option>
+                {facets.modalidades.map((m) => <option key={m}>{m}</option>)}
+              </select>
+            </label>
+            <label>Estado
+              <select value={f.estado} onChange={(e) => set("estado", e.target.value)}>
+                <option value="">Todos</option>
+                {facets.estados.map((m) => <option key={m}>{m}</option>)}
+              </select>
+            </label>
+            <label>Departamento
+              <select value={f.departamento} onChange={(e) => set("departamento", e.target.value)}>
+                <option value="">Todos</option>
+                {facets.departamentos.map((m) => <option key={m}>{m}</option>)}
+              </select>
+            </label>
+            <label>Publicado desde
+              <input type="date" value={f.desde} onChange={(e) => set("desde", e.target.value)} />
+            </label>
+            <label>Publicado hasta
+              <input type="date" value={f.hasta} onChange={(e) => set("hasta", e.target.value)} />
+            </label>
+          </div>
+        </details>
+
+        {(searched || extrasActivos > 0 || f.q) && (
+          <div className="acciones" style={{ marginTop: 12 }}>
+            <button type="button" className="link" onClick={() => { setF({ ...VACIO, source: f.source }); setItems([]); setSearched(false); }}>Limpiar filtros</button>
+          </div>
+        )}
       </form>
 
       {searched && (
-        <div className="panel">
-          <div className="actions" style={{ marginTop: 0 }}>
-            <input placeholder="Nombre de la alarma" value={alarmName} onChange={(e) => setAlarmName(e.target.value)} />
+        <section className="alarma" aria-label="Crear una alarma con estos filtros">
+          <div className="alarma-texto">
+            <strong>¿Quieres que te avisemos?</strong>
+            <span>Crea una alarma con estos filtros y te escribimos cuando aparezcan procesos nuevos.</span>
+          </div>
+          <div className="alarma-form">
+            <input aria-label="Nombre de la alarma" placeholder="Nombre de la alarma" value={alarmName} onChange={(e) => setAlarmName(e.target.value)} />
             <select aria-label="Frecuencia de la alarma" value={frecuencia} onChange={(e) => setFrecuencia(e.target.value as Frecuencia)}>
               {(Object.keys(FRECUENCIAS) as Frecuencia[]).map((k) => (
                 <option key={k} value={k} disabled={!permitidas.includes(k)}>
@@ -163,41 +201,52 @@ export default function Home() {
                 </option>
               ))}
             </select>
-            <button type="button" onClick={crearAlarma}>🔔 Avisarme de procesos nuevos con estos filtros</button>
+            <button type="button" onClick={crearAlarma}><Bell />Crear alarma</button>
           </div>
-          {alarmMsg && <p className={alarmMsg.ok ? "ok" : "error"} style={{ marginBottom: 0 }}>{alarmMsg.text}</p>}
+          {alarmMsg && <p className={alarmMsg.ok ? "ok" : "error"} role="status">{alarmMsg.text}</p>}
+        </section>
+      )}
+
+      {error && <p className="error" role="alert">{error}</p>}
+      {searched && !loading && !items.length && !error && (
+        <p className="muted">No hay procesos con esos filtros. Prueba con otra palabra o quita algún filtro.</p>
+      )}
+
+      {items.length > 0 && (
+        <div className="resumen">
+          <span>{items.length} {items.length === 1 ? "proceso" : "procesos"}{hasMore ? " o más" : ""}</span>
+          <span className="muted">Los más recientes primero</span>
         </div>
       )}
 
-      {error && <p className="error">{error}</p>}
-      {searched && !loading && !items.length && !error && <p className="muted">No hay procesos con esos filtros.</p>}
-
       {items.map((p) => (
-        <article className="item" key={p.key}>
-          <div className="meta">
-            <span className="badge">{p.source === "secop2" ? "SECOP II" : "SECOP I"}</span>
-            <span>{p.modalidad}</span>
-            <span>·</span>
-            <span>{p.estado}</span>
-            <span>·</span>
-            <span>Publicado {dia(p.fecha)}</span>
+        <article className="fila" key={p.key}>
+          <div>
+            <div className="meta">
+              <span className="plataforma">{p.source === "secop2" ? "SECOP II" : "SECOP I"}</span>
+              <span className={`estado ${tonoEstado(p.estado)}`}>{p.estado}</span>
+              <span>{p.modalidad}</span>
+              <span>Publicado {dia(p.fecha)}</span>
+            </div>
+            <h3>{p.objeto || "(sin descripción)"}</h3>
+            <div className="entidad">{p.entidad}{[p.ciudad, p.departamento].filter(Boolean).length ? `, ${[p.ciudad, p.departamento].filter(Boolean).join(", ")}` : ""}</div>
           </div>
-          <h3>{p.objeto || "(sin descripción)"}</h3>
-          <div className="muted">{p.entidad} — {[p.ciudad, p.departamento].filter(Boolean).join(", ")}</div>
-          <div className="actions">
+          <div className="cifra">
             <strong>{cop(p.valor)}</strong>
-            {p.url && <a href={p.url} target="_blank" rel="noopener noreferrer">Ver en SECOP ↗</a>}
+            {p.url && <a href={p.url} target="_blank" rel="noopener noreferrer">Abrir en SECOP</a>}
           </div>
         </article>
       ))}
 
       {hasMore && (
-        <button className="ghost" disabled={loading} onClick={() => buscar(page + 1)}>
-          {loading ? "Cargando…" : "Cargar más"}
-        </button>
+        <div className="mas-resultados">
+          <button className="ghost" disabled={loading} onClick={() => buscar(page + 1)}>
+            {loading ? "Cargando…" : "Cargar más"}
+          </button>
+        </div>
       )}
 
-      <p className="muted" style={{ marginTop: 32 }}>
+      <p className="muted pie">
         Datos abiertos de Colombia Compra Eficiente (datos.gov.co). La información la registran las entidades; verifica siempre en SECOP.
         {" "}<Link href="/privacidad">Política de datos</Link>
       </p>

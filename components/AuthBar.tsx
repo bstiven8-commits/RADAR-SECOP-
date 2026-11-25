@@ -36,12 +36,12 @@ export default function AuthBar() {
 
   return (
     <form className="authbar" onSubmit={entrar}>
-      <input type="email" required placeholder="tu@correo.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+      <input type="email" required aria-label="Tu correo" placeholder="tu@correo.com" value={email} onChange={(e) => setEmail(e.target.value)} />
       <button disabled={busy}>Registrarme / Entrar</button>
-      <span className="muted" style={{ fontSize: 12 }}>
+      {msg && <span className="muted" role="status">{msg}</span>}
+      <span className="consent">
         Al registrarte aceptas la <Link href="/privacidad">política de tratamiento de datos</Link>.
       </span>
-      {msg && <span className="muted">{msg}</span>}
     </form>
   );
 }

@@ -3,7 +3,10 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import AuthBar from "@/components/AuthBar";
 import { useSession } from "@/lib/use-session";
+import { Logo } from "@/components/Icons";
 import { FRECUENCIAS, type Frecuencia } from "@/lib/plans";
+
+const NOMBRE = process.env.NEXT_PUBLIC_APP_NAME ?? "Radar SECOP";
 
 interface Alarm {
   id: string;
@@ -53,29 +56,42 @@ export default function Alarmas() {
     cargar();
   }
 
+  const pct = info.limite ? Math.min(100, Math.round((alarms.length / info.limite) * 100)) : 0;
+
   return (
     <div className="wrap">
       <header className="top">
-        <h1><Link href="/" style={{ color: "inherit", textDecoration: "none" }}>← Mis alarmas</Link></h1>
+        <Link href="/" className="brand" aria-label="Radar SECOP, inicio">
+          <Logo />
+          <span>{NOMBRE}</span>
+        </Link>
         <AuthBar />
       </header>
 
+      <Link href="/" className="volver">Volver a la búsqueda</Link>
+      <h1 className="titulo">Mis alarmas</h1>
+
       {ready && !session && <p>Registra tu correo arriba para ver y administrar tus alarmas.</p>}
-      {error && <p className="error">{error}</p>}
+      {error && <p className="error" role="alert">{error}</p>}
 
       {session && (
         <>
-          <p className="muted">Plan {info.plan}: {alarms.length} de {info.limite} alarmas usadas.</p>
-          {!alarms.length && <p>Aún no tienes alarmas. Haz una búsqueda y crea una desde la página principal.</p>}
+          <div className="uso">
+            <span className="muted">Plan {info.plan}: {alarms.length} de {info.limite} alarmas usadas</span>
+            <div className="meter" role="img" aria-label={`${alarms.length} de ${info.limite} alarmas usadas`}><span style={{ width: `${pct}%` }} /></div>
+          </div>
+          {!alarms.length && <p>Aún no tienes alarmas. Haz una búsqueda y créala desde la página principal.</p>}
           {alarms.map((a) => (
-            <article className="item" key={a.id} style={{ opacity: a.active ? 1 : 0.6 }}>
-              <h3>{a.name}</h3>
-              <div className="meta">
-                {Object.entries(a.filters).map(([k, v]) => (
-                  <span className="badge" key={k}>{ETIQUETAS[k] ?? k}: {k === "source" ? PLAT[v] ?? v : v}</span>
-                ))}
+            <article className={`alarma-fila${a.active ? "" : " pausada"}`} key={a.id}>
+              <div>
+                <h3>{a.name}{a.active ? "" : " (pausada)"}</h3>
+                <div className="chips">
+                  {Object.entries(a.filters).map(([k, v]) => (
+                    <span className="chip" key={k}>{ETIQUETAS[k] ?? k}: {k === "source" ? PLAT[v] ?? v : v}</span>
+                  ))}
+                </div>
               </div>
-              <div className="actions">
+              <div className="controles">
                 <select aria-label="Frecuencia" value={a.frequency} onChange={(e) => cambiarFrecuencia(a, e.target.value as Frecuencia)}>
                   {(Object.keys(FRECUENCIAS) as Frecuencia[]).map((k) => (
                     <option key={k} value={k} disabled={!info.frecuencias.includes(k) && k !== a.frequency}>
