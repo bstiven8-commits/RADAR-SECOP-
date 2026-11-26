@@ -163,3 +163,16 @@ button.link { background: none; border: 0; color: var(--spruce); padding: 0 4px;
   .plan.destacado { padding: 20px 16px; margin-top: 0; }
   .cifra { text-align: left; align-items: flex-start; flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; }
 }
+
+/* Detalle de proceso */
+.datos { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0; margin: 24px 0; border-top: 2px solid var(--ink); }
+.datos > div { padding: 14px 16px 14px 0; border-bottom: 1px solid var(--line); }
+.datos dt { font-size: 13px; color: var(--muted); font-weight: 600; }
+.datos dd { margin: 2px 0 0; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.sec { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; margin: 28px 0 10px; }
+.boton-link { display: inline-block; background: var(--spruce); color: var(--on-spruce); font-weight: 700; padding: 12px 18px; border-radius: 6px; text-decoration: none; }
+.tabla-datos { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tabla-datos th, .tabla-datos td { text-align: left; vertical-align: top; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--line); }
+.tabla-datos th { width: 34%; color: var(--muted); font-weight: 600; }
+.tabla-datos td { overflow-wrap: anywhere; }
+@media (max-width: 720px) { .tabla-datos th { width: 42%; } }

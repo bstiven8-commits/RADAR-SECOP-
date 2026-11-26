@@ -232,3 +232,21 @@ export function parseFilters(sp: URLSearchParams): Filters {
     valorMax: monto(g("valorMax")),
   };
 }
+
+export interface Detalle {
+  proceso: Proceso;
+  campos: { etiqueta: string; valor: string }[];
+}
+
+// Un proceso por su id, con todos los campos que traiga el dataset (para la página de detalle).
+export async function getProceso(src: SingleSource, id: string): Promise<Detalle | null> {
+  const col = src === "secop2" ? "id_del_proceso" : "numero_de_constancia";
+  const p = new URLSearchParams({ $where: `${col} = '${esc(id)}'`, $limit: "1" });
+  const rows = await getJson(`${BASE}/${DATASETS[src].id}.json?${p}`, 300);
+  const r = rows[0];
+  if (!r) return null;
+  const campos = Object.entries(r)
+    .map(([k, v]) => ({ etiqueta: k.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase()), valor: urlOf(v) ?? str(v) }))
+    .filter((c) => c.valor && typeof c.valor === "string" && c.valor !== "[object Object]");
+  return { proceso: normalize(src, r), campos };
+}

@@ -264,6 +264,7 @@ export default function Home() {
           </div>
           <div className="cifra">
             <strong>{cop(p.valor)}</strong>
+            <Link href={`/proceso/${p.source}/${encodeURIComponent(p.id)}`}>Ver detalle</Link>
             {p.url && <a href={p.url} target="_blank" rel="noopener noreferrer">Abrir en SECOP</a>}
           </div>
         </article>
