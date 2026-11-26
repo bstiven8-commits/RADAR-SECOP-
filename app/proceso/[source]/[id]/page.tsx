@@ -61,7 +61,7 @@ export default async function Detalle({ params }: { params: Params }) {
 
       {p.url && (
         <p style={{ margin: "24px 0" }}>
-          <a className="boton-link" href={p.url} target="_blank" rel="noopener noreferrer">Abrir en SECOP y ver documentos (estudios previos)</a>
+          <a className="boton-link" href={p.url} target="_blank" rel="noopener noreferrer">Abrir en SECOP y ver documentos</a>
         </p>
       )}
 
