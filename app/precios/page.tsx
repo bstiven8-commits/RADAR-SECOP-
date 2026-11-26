@@ -100,6 +100,7 @@ export default function Precios() {
       <p className="muted pie">
         El pago se hace en Wompi con PSE, tarjeta, Nequi o Bancolombia. Cuando termine el plan, vuelves al gratuito y tus alarmas se conservan.
         Si pagas el mismo plan antes de que venza, los {DIAS_PLAN} días se suman a los que te quedan.
+        {" "}<Link href="/terminos">Términos</Link> · <Link href="/devoluciones">Devoluciones</Link>
       </p>
     </div>
   );

@@ -248,7 +248,7 @@ export default function Home() {
 
       <p className="muted pie">
         Datos abiertos de Colombia Compra Eficiente (datos.gov.co). La información la registran las entidades; verifica siempre en SECOP.
-        {" "}<Link href="/privacidad">Política de datos</Link>
+        {" "}<Link href="/privacidad">Política de datos</Link> · <Link href="/terminos">Términos</Link> · <Link href="/devoluciones">Devoluciones</Link>
       </p>
     </div>
   );
