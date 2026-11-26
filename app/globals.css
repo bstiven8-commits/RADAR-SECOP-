@@ -185,3 +185,5 @@ button.link { background: none; border: 0; color: var(--spruce); padding: 0 4px;
 .lista-deptos li { border-bottom: 1px solid var(--line); }
 .lista-deptos a { display: block; padding: 12px 0; font-weight: 600; text-decoration: none; }
 .lista-deptos a:hover { text-decoration: underline; }
+
+.chip-btn.enlace { display: inline-flex; align-items: center; text-decoration: none; border-style: dashed; }

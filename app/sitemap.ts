@@ -8,7 +8,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = (process.env.NEXT_PUBLIC_APP_URL ?? "https://alertasecop.com").replace(/\/$/, "");
   let deptos: string[] = [];
   try {
-    deptos = await facet("secop2", "departamento");
+    deptos = (await facet("secop2", "departamento")).filter((d) => !/no definido/i.test(d));
   } catch {}
   return [
     { url: base, changeFrequency: "daily", priority: 1 },

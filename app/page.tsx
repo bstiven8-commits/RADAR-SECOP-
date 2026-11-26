@@ -184,6 +184,7 @@ export default function Home() {
               {x.nombre}
             </button>
           ))}
+          <Link href="/departamentos" className="chip-btn enlace">Por departamento →</Link>
         </div>
 
         <details className="mas">
@@ -302,7 +303,7 @@ export default function Home() {
 
       <p className="muted pie">
         Datos abiertos de Colombia Compra Eficiente (datos.gov.co). La información la registran las entidades; verifica siempre en SECOP.
-        {" "}<Link href="/privacidad">Política de datos</Link> · <Link href="/terminos">Términos</Link> · <Link href="/devoluciones">Devoluciones</Link>
+        {" "}<Link href="/departamentos">Por departamento</Link> · <Link href="/privacidad">Política de datos</Link> · <Link href="/terminos">Términos</Link> · <Link href="/devoluciones">Devoluciones</Link>
       </p>
     </div>
   );

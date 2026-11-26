@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export default async function Departamentos() {
   let lista: string[] = [];
   try {
-    lista = await facet("secop2", "departamento");
+    lista = (await facet("secop2", "departamento")).filter((d) => !/no definido/i.test(d));
   } catch {}
   return (
     <div className="wrap">
