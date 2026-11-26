@@ -19,8 +19,9 @@ interface F {
   hasta: string;
   valorMin: string;
   valorMax: string;
+  abiertos: string;
 }
-const VACIO: F = { source: "secop2", q: "", modalidad: "", estado: "", departamento: "", desde: "", hasta: "", valorMin: "", valorMax: "" };
+const VACIO: F = { source: "secop2", q: "", modalidad: "", estado: "", departamento: "", desde: "", hasta: "", valorMin: "", valorMax: "", abiertos: "" };
 
 // Atajos por sector: llenan la palabra clave con varios términos (cualquiera de ellos)
 const SECTORES: { nombre: string; q: string }[] = [
@@ -70,7 +71,7 @@ export default function Home() {
   const [permitidas, setPermitidas] = useState<Frecuencia[]>(["daily"]);
 
   const set = <K extends keyof F>(k: K, v: F[K]) => setF((x) => ({ ...x, [k]: v }));
-  const extrasActivos = [f.modalidad, f.estado, f.departamento, f.desde, f.hasta, f.valorMin, f.valorMax].filter(Boolean).length;
+  const extrasActivos = [f.modalidad, f.estado, f.departamento, f.desde, f.hasta, f.valorMin, f.valorMax, f.abiertos].filter(Boolean).length;
 
   // Los selectores se cargan desde los datos reales, para que coincidan exactamente con SECOP
   useEffect(() => {
@@ -193,6 +194,10 @@ export default function Home() {
                 {facets.departamentos.map((m) => <option key={m}>{m}</option>)}
               </select>
             </label>
+            <label className="check">
+              <input type="checkbox" checked={f.abiertos === "1"} onChange={(e) => set("abiertos", e.target.checked ? "1" : "")} />
+              Solo procesos que aún reciben ofertas (SECOP II)
+            </label>
             <label>Valor mínimo (COP, SECOP II)
               <input type="number" inputMode="numeric" min="0" step="1000000" placeholder="Ej. 50000000" value={f.valorMin} onChange={(e) => set("valorMin", e.target.value)} />
             </label>
@@ -256,6 +261,7 @@ export default function Home() {
               <span className={`estado ${tonoEstado(p.estado)}`}>{p.estado}</span>
               <span>{p.modalidad}</span>
               <span>Publicado {dia(p.fecha)}</span>
+              {p.fase && <span>{p.fase}</span>}
               {p.cierre && <span>Cierre {dia(p.cierre)}</span>}
               {p.ofertas != null && <span>{p.ofertas} {p.ofertas === 1 ? "oferta" : "ofertas"}</span>}
             </div>

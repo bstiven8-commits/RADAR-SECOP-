@@ -16,6 +16,7 @@ export interface Filters {
   hasta?: string; // YYYY-MM-DD
   valorMin?: number;
   valorMax?: number;
+  abiertos?: boolean; // solo procesos que aún reciben ofertas (SECOP II)
 }
 
 export interface Proceso {
@@ -37,6 +38,9 @@ export interface Proceso {
   duracion?: string;
   ofertas?: number | null;
   adjudicado?: string;
+  fase?: string;
+  referencia?: string;
+  invitados?: number | null;
 }
 
 const BASE = "https://www.datos.gov.co/resource";
@@ -49,6 +53,7 @@ export const DATASETS = {
     departamento: "departamento_entidad",
     fecha: "fecha_de_publicacion_del",
     valor: "precio_base",
+    cierre: "fecha_de_recepcion_de",
     texto: ["nombre_del_procedimiento", "descripci_n_del_procedimiento"],
   },
   secop1: {
@@ -88,6 +93,10 @@ function where(src: SingleSource, f: Filters): string {
     if (f.valorMin != null) parts.push(`${DATASETS.secop2.valor} >= ${f.valorMin}`);
     if (f.valorMax != null) parts.push(`${DATASETS.secop2.valor} <= ${f.valorMax}`);
   }
+  if (src === "secop2" && f.abiertos) {
+    const ahora = new Date(Date.now() - 5 * 3600 * 1000).toISOString().slice(0, 19); // hora de Colombia
+    parts.push(`${DATASETS.secop2.cierre} >= '${ahora}'`);
+  }
   // Varias palabras separadas por coma = cualquiera de ellas (OR)
   const terminos = (f.q ?? "").split(",").map((t) => t.trim()).filter(Boolean).slice(0, 12);
   if (terminos.length) {
@@ -114,7 +123,7 @@ const first = (r: Row, keys: string[]) => {
   return "";
 };
 
-function extras(r: Row): Pick<Proceso, "descripcion" | "cierre" | "duracion" | "ofertas" | "adjudicado"> {
+function extras(r: Row): Pick<Proceso, "descripcion" | "cierre" | "duracion" | "ofertas" | "adjudicado" | "fase" | "referencia" | "invitados"> {
   const dur = first(r, ["duracion"]);
   const unidad = first(r, ["unidad_de_duracion"]);
   const n = first(r, ["respuestas_al_procedimiento", "conteo_de_respuestas_a_ofertas", "respuestas_externas"]);
@@ -124,6 +133,9 @@ function extras(r: Row): Pick<Proceso, "descripcion" | "cierre" | "duracion" | "
     duracion: dur && dur !== "0" ? `${dur} ${unidad}`.trim() : "",
     ofertas: n !== "" && Number.isFinite(Number(n)) ? Number(n) : null,
     adjudicado: first(r, ["nombre_del_proveedor", "proveedor_adjudicado", "nombre_del_adjudicador"]),
+    fase: first(r, ["fase"]),
+    referencia: first(r, ["referencia_del_proceso"]),
+    invitados: first(r, ["proveedores_invitados"]) !== "" && Number.isFinite(Number(first(r, ["proveedores_invitados"]))) ? Number(first(r, ["proveedores_invitados"])) : null,
   };
 }
 
@@ -184,7 +196,7 @@ export interface SearchResult {
 
 export async function search(f: Filters, page = 0, pageSize = 20): Promise<SearchResult> {
   // El filtro por valor solo aplica a SECOP II (su valor es numérico y confiable)
-  const porValor = f.valorMin != null || f.valorMax != null;
+  const porValor = f.valorMin != null || f.valorMax != null || !!f.abiertos;
   const sources: SingleSource[] = porValor ? ["secop2"] : f.source === "both" ? ["secop2", "secop1"] : [f.source];
   const per = sources.length === 2 ? Math.ceil(pageSize / 2) : pageSize;
   const parts = await Promise.all(sources.map((s) => querySource(s, f, page * per, per)));
@@ -230,6 +242,7 @@ export function parseFilters(sp: URLSearchParams): Filters {
     hasta: g("hasta"),
     valorMin: monto(g("valorMin")),
     valorMax: monto(g("valorMax")),
+    abiertos: g("abiertos") === "1" ? true : undefined,
   };
 }
 

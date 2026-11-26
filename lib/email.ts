@@ -37,6 +37,9 @@ export function digestHtml(digests: Digest[], appUrl: string, bajaLink: string):
             <tr><td style="padding:2px 12px 2px 0;color:#777">Valor</td><td><b>${cop(p.valor)}</b></td></tr>
             <tr><td style="padding:2px 12px 2px 0;color:#777">Publicado</td><td>${h(fechaCorta(p.fecha) || "—")}</td></tr>
             ${p.cierre ? `<tr><td style="padding:2px 12px 2px 0;color:#777">Cierre de ofertas</td><td><b>${h(fechaCorta(p.cierre))}</b></td></tr>` : ""}
+            ${p.fase ? `<tr><td style="padding:2px 12px 2px 0;color:#777">Fase</td><td>${h(p.fase)}</td></tr>` : ""}
+            ${p.referencia ? `<tr><td style="padding:2px 12px 2px 0;color:#777">Referencia</td><td>${h(p.referencia)}</td></tr>` : ""}
+            ${p.invitados ? `<tr><td style="padding:2px 12px 2px 0;color:#777">Proveedores invitados</td><td>${p.invitados}</td></tr>` : ""}
             ${p.duracion ? `<tr><td style="padding:2px 12px 2px 0;color:#777">Duración</td><td>${h(p.duracion)}</td></tr>` : ""}
             ${p.ofertas != null ? `<tr><td style="padding:2px 12px 2px 0;color:#777">Ofertas recibidas</td><td>${p.ofertas}</td></tr>` : ""}
             ${p.adjudicado ? `<tr><td style="padding:2px 12px 2px 0;color:#777">Adjudicado a</td><td>${h(p.adjudicado)}</td></tr>` : ""}

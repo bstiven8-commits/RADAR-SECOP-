@@ -176,3 +176,6 @@ button.link { background: none; border: 0; color: var(--spruce); padding: 0 4px;
 .tabla-datos th { width: 34%; color: var(--muted); font-weight: 600; }
 .tabla-datos td { overflow-wrap: anywhere; }
 @media (max-width: 720px) { .tabla-datos th { width: 42%; } }
+
+.filtros label.check { flex-direction: row; align-items: center; gap: 10px; color: var(--ink); font-size: 14px; grid-column: 1 / -1; }
+.filtros label.check input { min-height: 0; width: 18px; height: 18px; }

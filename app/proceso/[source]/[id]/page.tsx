@@ -55,6 +55,9 @@ export default async function Detalle({ params }: { params: Params }) {
         <div><dt>Valor</dt><dd>{cop(p.valor)}</dd></div>
         <div><dt>Publicado</dt><dd>{dia(p.fecha)}</dd></div>
         {p.cierre && <div><dt>Cierre de ofertas</dt><dd>{dia(p.cierre)}</dd></div>}
+        {p.fase && <div><dt>Fase</dt><dd>{p.fase}</dd></div>}
+        {p.referencia && <div><dt>Referencia</dt><dd>{p.referencia}</dd></div>}
+        {p.invitados ? <div><dt>Proveedores invitados</dt><dd>{p.invitados}</dd></div> : null}
         {p.duracion && <div><dt>Duración</dt><dd>{p.duracion}</dd></div>}
         {p.ofertas != null && <div><dt>Ofertas recibidas</dt><dd>{p.ofertas}</dd></div>}
         {p.adjudicado && <div><dt>Adjudicado a</dt><dd>{p.adjudicado}</dd></div>}
