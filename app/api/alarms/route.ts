@@ -1,17 +1,21 @@
 import { NextResponse } from "next/server";
 import { admin, userFromRequest } from "@/lib/supabase-server";
-import { esFrecuencia, FRECUENCIA_POR_DEFECTO, FRECUENCIAS, PLAN_LIMITS, type Frecuencia, type Plan } from "@/lib/plans";
+import { esFrecuencia, FRECUENCIA_POR_DEFECTO, FRECUENCIAS, PLAN_LIMITS, planVigente, type Frecuencia, type Plan } from "@/lib/plans";
 import { parseFilters } from "@/lib/secop";
 
 export const dynamic = "force-dynamic";
 
 const unauthorized = () => NextResponse.json({ error: "Inicia sesión" }, { status: 401 });
 
-async function planDe(userId: string): Promise<Plan> {
-  const { data } = await admin().from("profiles").select("plan").eq("id", userId).maybeSingle();
+async function perfilDe(userId: string): Promise<{ plan: Plan; vence: string | null }> {
+  const { data } = await admin().from("profiles").select("plan,plan_expires_at").eq("id", userId).maybeSingle();
   const plan = data?.plan as Plan | undefined;
-  return plan && plan in PLAN_LIMITS ? plan : "free";
+  const base: Plan = plan && plan in PLAN_LIMITS ? plan : "free";
+  // Si el pago venció, aplica el plan gratuito
+  return { plan: planVigente(base, data?.plan_expires_at), vence: data?.plan_expires_at ?? null };
 }
+
+const planDe = async (userId: string) => (await perfilDe(userId)).plan;
 
 const noPermitida = (f: Frecuencia, plan: Plan) =>
   NextResponse.json(
@@ -28,10 +32,11 @@ export async function GET(req: Request) {
     .select("id,name,filters,active,frequency,created_at")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
-  const plan = await planDe(user.id);
+  const { plan, vence } = await perfilDe(user.id);
   return NextResponse.json({
     alarms: alarms ?? [],
     plan,
+    vence: plan === "free" ? null : vence,
     limite: PLAN_LIMITS[plan].alarmas,
     frecuencias: PLAN_LIMITS[plan].frecuencias,
     etiquetas: Object.fromEntries(Object.entries(FRECUENCIAS).map(([k, v]) => [k, v.etiqueta])),

@@ -3,7 +3,7 @@ import { admin } from "@/lib/supabase-server";
 import { search, type Filters, type Proceso } from "@/lib/secop";
 import { digestHtml, sendEmail, type Digest } from "@/lib/email";
 import { bajaUrl } from "@/lib/unsub";
-import { esFrecuencia, FRECUENCIA_POR_DEFECTO } from "@/lib/plans";
+import { esFrecuencia, FRECUENCIA_POR_DEFECTO, PLAN_LIMITS, planVigente, type Plan } from "@/lib/plans";
 import { tocaRevisar } from "@/lib/frecuencia";
 
 export const dynamic = "force-dynamic";
@@ -28,13 +28,22 @@ export async function GET(req: Request) {
     .eq("active", true);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+  // Plan vigente de cada dueño de alarmas: si venció el pago, sus alarmas rápidas pasan a revisión diaria
+  const ids = [...new Set((alarms ?? []).map((a) => a.user_id))];
+  const { data: perfiles } = ids.length ? await db.from("profiles").select("id,plan,plan_expires_at").in("id", ids) : { data: [] };
+  const planDe = new Map<string, Plan>(
+    (perfiles ?? []).map((p) => [p.id, planVigente(((p.plan as Plan) in PLAN_LIMITS ? p.plan : "free") as Plan, p.plan_expires_at, ahora)]),
+  );
+
   const porUsuario = new Map<string, Digest[]>();
   let revisadas = 0;
   let omitidas = 0;
   let fallidas = 0;
 
   for (const a of alarms ?? []) {
-    const frecuencia = esFrecuencia(a.frequency) ? a.frequency : FRECUENCIA_POR_DEFECTO;
+    const pedida = esFrecuencia(a.frequency) ? a.frequency : FRECUENCIA_POR_DEFECTO;
+    const permitidas = PLAN_LIMITS[planDe.get(a.user_id) ?? "free"].frecuencias;
+    const frecuencia = permitidas.includes(pedida) ? pedida : FRECUENCIA_POR_DEFECTO;
     if (!tocaRevisar(frecuencia, a.last_checked_at, ahora)) {
       omitidas++;
       continue;

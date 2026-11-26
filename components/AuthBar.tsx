@@ -29,6 +29,7 @@ export default function AuthBar() {
       <div className="authbar">
         <span>{session.user.email}</span>
         <Link href="/alarmas">Mis alarmas</Link>
+        <Link href="/precios">Planes</Link>
         <button className="link" onClick={() => supabaseBrowser().auth.signOut()}>Salir</button>
       </div>
     );
@@ -36,6 +37,7 @@ export default function AuthBar() {
 
   return (
     <form className="authbar" onSubmit={entrar}>
+      <Link href="/precios">Planes</Link>
       <input type="email" required aria-label="Tu correo" placeholder="tu@correo.com" value={email} onChange={(e) => setEmail(e.target.value)} />
       <button disabled={busy}>Registrarme / Entrar</button>
       {msg && <span className="muted" role="status">{msg}</span>}

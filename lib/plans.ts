@@ -22,3 +22,18 @@ export const PLAN_LIMITS: Record<Plan, { alarmas: number; frecuencias: Frecuenci
 export function esFrecuencia(v: unknown): v is Frecuencia {
   return typeof v === "string" && v in FRECUENCIAS;
 }
+
+// Precios en pesos colombianos. El plan se paga por 30 días y no se renueva solo.
+export const PRECIOS_COP: Record<Exclude<Plan, "free">, number> = { pro: 19_900, business: 59_900 };
+export const DIAS_PLAN = 30;
+
+export function esPlanDePago(v: unknown): v is Exclude<Plan, "free"> {
+  return v === "pro" || v === "business";
+}
+
+/** Plan que realmente aplica hoy: si el pago venció, vuelve a free. Sin vencimiento (null) = asignado a mano. */
+export function planVigente(plan: Plan, expira: string | null | undefined, ahora: Date = new Date()): Plan {
+  if (plan === "free") return "free";
+  if (!expira) return plan;
+  return new Date(expira).getTime() > ahora.getTime() ? plan : "free";
+}
