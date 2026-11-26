@@ -132,7 +132,7 @@ function extras(r: Row): Pick<Proceso, "descripcion" | "cierre" | "duracion" | "
     cierre: first(r, ["fecha_de_recepcion_de", "fecha_de_apertura_de_respuestas", "fecha_de_recepcion_de_respuestas"]) || null,
     duracion: dur && dur !== "0" ? `${dur} ${unidad}`.trim() : "",
     ofertas: n !== "" && Number.isFinite(Number(n)) ? Number(n) : null,
-    adjudicado: first(r, ["nombre_del_proveedor", "proveedor_adjudicado", "nombre_del_adjudicador"]),
+    adjudicado: first(r, ["nombre_del_proveedor", "proveedor_adjudicado", "nombre_del_adjudicador"]).replace(/^no definido$/i, ""),
     fase: first(r, ["fase"]),
     referencia: first(r, ["referencia_del_proceso"]),
     invitados: first(r, ["proveedores_invitados"]) !== "" && Number.isFinite(Number(first(r, ["proveedores_invitados"]))) ? Number(first(r, ["proveedores_invitados"])) : null,
