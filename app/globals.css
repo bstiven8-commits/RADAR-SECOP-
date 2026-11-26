@@ -179,3 +179,9 @@ button.link { background: none; border: 0; color: var(--spruce); padding: 0 4px;
 
 .filtros label.check { flex-direction: row; align-items: center; gap: 10px; color: var(--ink); font-size: 14px; grid-column: 1 / -1; }
 .filtros label.check input { min-height: 0; width: 18px; height: 18px; }
+
+/* Departamentos */
+.lista-deptos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0 24px; border-top: 2px solid var(--ink); }
+.lista-deptos li { border-bottom: 1px solid var(--line); }
+.lista-deptos a { display: block; padding: 12px 0; font-weight: 600; text-decoration: none; }
+.lista-deptos a:hover { text-decoration: underline; }

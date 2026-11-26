@@ -112,6 +112,22 @@ export default function Home() {
     [f],
   );
 
+  // Llegada desde /departamento/...: precarga el departamento y busca
+  const [auto, setAuto] = useState(false);
+  useEffect(() => {
+    const d = new URLSearchParams(window.location.search).get("departamento");
+    if (d) {
+      setF((x) => ({ ...x, source: "secop2", departamento: d, abiertos: "1" }));
+      setAuto(true);
+    }
+  }, []);
+  useEffect(() => {
+    if (auto) {
+      setAuto(false);
+      buscar(0);
+    }
+  }, [auto, buscar]);
+
   async function crearAlarma() {
     setAlarmMsg(null);
     if (!session) return setAlarmMsg({ ok: false, text: "Primero registra tu correo arriba para poder crear alarmas." });
