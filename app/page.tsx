@@ -227,6 +227,8 @@ export default function Home() {
               <span className={`estado ${tonoEstado(p.estado)}`}>{p.estado}</span>
               <span>{p.modalidad}</span>
               <span>Publicado {dia(p.fecha)}</span>
+              {p.cierre && <span>Cierre {dia(p.cierre)}</span>}
+              {p.ofertas != null && <span>{p.ofertas} {p.ofertas === 1 ? "oferta" : "ofertas"}</span>}
             </div>
             <h3>{p.objeto || "(sin descripción)"}</h3>
             <div className="entidad">{p.entidad}{[p.ciudad, p.departamento].filter(Boolean).length ? `, ${[p.ciudad, p.departamento].filter(Boolean).join(", ")}` : ""}</div>

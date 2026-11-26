@@ -29,6 +29,12 @@ export interface Proceso {
   valor: number | null;
   fecha: string | null;
   url: string | null;
+  // Datos extra (opcionales: dependen de que la columna exista en el dataset)
+  descripcion?: string;
+  cierre?: string | null;
+  duracion?: string;
+  ofertas?: number | null;
+  adjudicado?: string;
 }
 
 const BASE = "https://www.datos.gov.co/resource";
@@ -91,6 +97,28 @@ async function getJson(url: string, revalidate?: number): Promise<Row[]> {
   return (await res.json()) as Row[];
 }
 
+// Devuelve el primer campo que tenga valor, para tolerar nombres de columna distintos.
+const first = (r: Row, keys: string[]) => {
+  for (const k of keys) {
+    const v = str(r[k]).trim();
+    if (v) return v;
+  }
+  return "";
+};
+
+function extras(r: Row): Pick<Proceso, "descripcion" | "cierre" | "duracion" | "ofertas" | "adjudicado"> {
+  const dur = first(r, ["duracion"]);
+  const unidad = first(r, ["unidad_de_duracion"]);
+  const n = first(r, ["respuestas_al_procedimiento", "conteo_de_respuestas_a_ofertas", "respuestas_externas"]);
+  return {
+    descripcion: first(r, ["descripci_n_del_procedimiento", "descripcion_del_procedimiento", "detalle_del_objeto_a_contratar"]),
+    cierre: first(r, ["fecha_de_recepcion_de", "fecha_de_apertura_de_respuestas", "fecha_de_recepcion_de_respuestas"]) || null,
+    duracion: dur && dur !== "0" ? `${dur} ${unidad}`.trim() : "",
+    ofertas: n !== "" && Number.isFinite(Number(n)) ? Number(n) : null,
+    adjudicado: first(r, ["nombre_del_proveedor", "proveedor_adjudicado", "nombre_del_adjudicador"]),
+  };
+}
+
 function normalize(src: SingleSource, r: Row): Proceso {
   if (src === "secop2") {
     const id = str(r.id_del_proceso) || str(r.referencia_del_proceso);
@@ -107,6 +135,7 @@ function normalize(src: SingleSource, r: Row): Proceso {
       valor: num(r.precio_base),
       fecha: str(r.fecha_de_publicacion_del) || null,
       url: urlOf(r.urlproceso),
+      ...extras(r),
     };
   }
   const id = str(r.numero_de_constancia) || str(r.uid) || str(r.numero_de_proceso);
@@ -123,6 +152,7 @@ function normalize(src: SingleSource, r: Row): Proceso {
     valor: num(r.cuantia_proceso),
     fecha: str(r.fecha_de_cargue_en_el_secop) || null,
     url: urlOf(r.ruta_proceso_en_secop_i),
+    ...extras(r),
   };
 }
 

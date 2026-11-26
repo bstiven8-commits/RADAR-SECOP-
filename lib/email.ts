@@ -3,12 +3,21 @@ import type { Proceso } from "./secop";
 const h = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
+const fechaCorta = (s?: string | null) => (s ? s.slice(0, 10) : "");
+
 const cop = (n: number | null) =>
   n == null ? "—" : new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
 
 export interface Digest {
   alarma: string;
   procesos: Proceso[];
+}
+
+function resumen(p: Proceso): string {
+  const d = (p.descripcion ?? "").trim();
+  if (!d || d === p.objeto.trim()) return "";
+  const corto = d.length > 280 ? `${d.slice(0, 280).trimEnd()}…` : d;
+  return `<div style="font-size:13px;color:#333;margin:6px 0">${h(corto)}</div>`;
 }
 
 export function digestHtml(digests: Digest[], appUrl: string, bajaLink: string): string {
@@ -23,8 +32,16 @@ export function digestHtml(digests: Digest[], appUrl: string, bajaLink: string):
           <div style="font-size:12px;color:#666">${p.source === "secop2" ? "SECOP II" : "SECOP I"} · ${h(p.modalidad)} · ${h(p.estado)}</div>
           <div style="font-weight:600;margin:4px 0">${h(p.objeto.slice(0, 220))}</div>
           <div style="font-size:13px;color:#444">${h(p.entidad)} — ${h([p.ciudad, p.departamento].filter(Boolean).join(", "))}</div>
-          <div style="font-size:13px;color:#444">Valor: ${cop(p.valor)}</div>
-          ${p.url ? `<a href="${h(p.url)}" style="font-size:13px">Ver en SECOP</a>` : ""}
+          ${resumen(p)}
+          <table style="font-size:13px;color:#444;margin:8px 0;border-collapse:collapse">
+            <tr><td style="padding:2px 12px 2px 0;color:#777">Valor</td><td><b>${cop(p.valor)}</b></td></tr>
+            <tr><td style="padding:2px 12px 2px 0;color:#777">Publicado</td><td>${h(fechaCorta(p.fecha) || "—")}</td></tr>
+            ${p.cierre ? `<tr><td style="padding:2px 12px 2px 0;color:#777">Cierre de ofertas</td><td><b>${h(fechaCorta(p.cierre))}</b></td></tr>` : ""}
+            ${p.duracion ? `<tr><td style="padding:2px 12px 2px 0;color:#777">Duración</td><td>${h(p.duracion)}</td></tr>` : ""}
+            ${p.ofertas != null ? `<tr><td style="padding:2px 12px 2px 0;color:#777">Ofertas recibidas</td><td>${p.ofertas}</td></tr>` : ""}
+            ${p.adjudicado ? `<tr><td style="padding:2px 12px 2px 0;color:#777">Adjudicado a</td><td>${h(p.adjudicado)}</td></tr>` : ""}
+          </table>
+          ${p.url ? `<a href="${h(p.url)}" style="font-size:13px">Ver proceso y documentos (estudios previos) en SECOP</a>` : ""}
         </div>`,
         )
         .join("")}`,
