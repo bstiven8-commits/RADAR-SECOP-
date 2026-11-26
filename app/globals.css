@@ -75,7 +75,7 @@ button.link { background: none; border: 0; color: var(--spruce); padding: 0 4px;
 
 /* Buscador */
 .buscador { margin-bottom: 28px; }
-.fila-principal { display: grid; grid-template-columns: minmax(0, 1fr) 150px auto; gap: 10px; }
+.fila-principal { display: grid; grid-template-columns: minmax(0, 1fr) 200px 130px auto; gap: 10px; }
 .fila-principal input[type="search"], .fila-principal .q { font-size: 17px; min-height: 52px; padding: 12px 16px; border-width: 2px; border-color: var(--ink); }
 .fila-principal select { min-height: 52px; }
 .fila-principal button { min-height: 52px; padding: 0 28px; font-size: 16px; }
