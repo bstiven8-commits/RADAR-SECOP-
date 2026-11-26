@@ -34,6 +34,7 @@ export default async function Detalle({ params }: { params: Params }) {
   const d = await cargar(params);
   if (!d) notFound();
   const p = d.proceso;
+  const largo = (p.descripcion ?? "").trim();
 
   return (
     <div className="wrap">
@@ -58,6 +59,13 @@ export default async function Detalle({ params }: { params: Params }) {
         {p.ofertas != null && <div><dt>Ofertas recibidas</dt><dd>{p.ofertas}</dd></div>}
         {p.adjudicado && <div><dt>Adjudicado a</dt><dd>{p.adjudicado}</dd></div>}
       </dl>
+
+      {largo && largo !== p.objeto.trim() && (
+        <section>
+          <h2 className="sec">Descripción</h2>
+          <p style={{ maxWidth: "70ch", whiteSpace: "pre-line" }}>{largo}</p>
+        </section>
+      )}
 
       {p.url && (
         <p style={{ margin: "24px 0" }}>
