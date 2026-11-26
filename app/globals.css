@@ -87,6 +87,12 @@ button.link { background: none; border: 0; color: var(--spruce); padding: 0 4px;
 .filtros select, .filtros input { font-weight: 400; color: var(--ink); }
 .acciones { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 
+/* Atajos por sector */
+.sectores { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.chip-btn { background: var(--card); color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 0 14px; min-height: 36px; font-size: 14px; font-weight: 600; }
+.chip-btn:hover:not(:disabled) { border-color: var(--ink); filter: none; }
+.chip-btn.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
 /* Banda de alarma: lo único amarillo de la página */
 .alarma { background: var(--signal-soft); border: 1px solid var(--signal-line); border-left: 6px solid var(--signal); border-radius: 4px; padding: 16px 18px; margin-bottom: 28px; display: grid; gap: 12px; }
 .alarma-texto { display: flex; flex-direction: column; gap: 2px; }

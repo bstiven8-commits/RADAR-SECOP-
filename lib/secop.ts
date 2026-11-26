@@ -14,6 +14,8 @@ export interface Filters {
   departamento?: string;
   desde?: string; // YYYY-MM-DD
   hasta?: string; // YYYY-MM-DD
+  valorMin?: number;
+  valorMax?: number;
 }
 
 export interface Proceso {
@@ -46,6 +48,7 @@ export const DATASETS = {
     estado: "estado_del_procedimiento",
     departamento: "departamento_entidad",
     fecha: "fecha_de_publicacion_del",
+    valor: "precio_base",
     texto: ["nombre_del_procedimiento", "descripci_n_del_procedimiento"],
   },
   secop1: {
@@ -81,9 +84,14 @@ function where(src: SingleSource, f: Filters): string {
   if (f.departamento) parts.push(`${c.departamento} = '${esc(f.departamento)}'`);
   if (f.desde) parts.push(`${c.fecha} >= '${esc(f.desde)}T00:00:00'`);
   if (f.hasta) parts.push(`${c.fecha} <= '${esc(f.hasta)}T23:59:59'`);
-  const q = f.q?.trim();
-  if (q) {
-    const like = c.texto.map((col) => `upper(${col}) like upper('%${esc(q)}%')`);
+  if (src === "secop2") {
+    if (f.valorMin != null) parts.push(`${DATASETS.secop2.valor} >= ${f.valorMin}`);
+    if (f.valorMax != null) parts.push(`${DATASETS.secop2.valor} <= ${f.valorMax}`);
+  }
+  // Varias palabras separadas por coma = cualquiera de ellas (OR)
+  const terminos = (f.q ?? "").split(",").map((t) => t.trim()).filter(Boolean).slice(0, 12);
+  if (terminos.length) {
+    const like = terminos.flatMap((t) => c.texto.map((col) => `upper(${col}) like upper('%${esc(t)}%')`));
     parts.push(`(${like.join(" OR ")})`);
   }
   return parts.join(" AND ");
@@ -175,8 +183,10 @@ export interface SearchResult {
 }
 
 export async function search(f: Filters, page = 0, pageSize = 20): Promise<SearchResult> {
-  const sources: SingleSource[] = f.source === "both" ? ["secop2", "secop1"] : [f.source];
-  const per = f.source === "both" ? Math.ceil(pageSize / 2) : pageSize;
+  // El filtro por valor solo aplica a SECOP II (su valor es numérico y confiable)
+  const porValor = f.valorMin != null || f.valorMax != null;
+  const sources: SingleSource[] = porValor ? ["secop2"] : f.source === "both" ? ["secop2", "secop1"] : [f.source];
+  const per = sources.length === 2 ? Math.ceil(pageSize / 2) : pageSize;
   const parts = await Promise.all(sources.map((s) => querySource(s, f, page * per, per)));
   const items = parts.flat().sort((a, b) => (b.fecha ?? "").localeCompare(a.fecha ?? ""));
   return { items, hasMore: parts.some((p) => p.length >= per) };
@@ -202,6 +212,11 @@ export async function facet(src: Source, field: "modalidad" | "estado" | "depart
   return [...new Set(lists.flat())].sort((a, b) => a.localeCompare(b, "es"));
 }
 
+const monto = (v?: string) => {
+  const n = Number(v);
+  return v && Number.isFinite(n) && n >= 0 ? Math.floor(n) : undefined;
+};
+
 export function parseFilters(sp: URLSearchParams): Filters {
   const source = sp.get("source");
   const g = (k: string) => sp.get(k)?.trim() || undefined;
@@ -213,5 +228,7 @@ export function parseFilters(sp: URLSearchParams): Filters {
     departamento: g("departamento"),
     desde: g("desde"),
     hasta: g("hasta"),
+    valorMin: monto(g("valorMin")),
+    valorMax: monto(g("valorMax")),
   };
 }

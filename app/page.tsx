@@ -17,8 +17,22 @@ interface F {
   departamento: string;
   desde: string;
   hasta: string;
+  valorMin: string;
+  valorMax: string;
 }
-const VACIO: F = { source: "secop2", q: "", modalidad: "", estado: "", departamento: "", desde: "", hasta: "" };
+const VACIO: F = { source: "secop2", q: "", modalidad: "", estado: "", departamento: "", desde: "", hasta: "", valorMin: "", valorMax: "" };
+
+// Atajos por sector: llenan la palabra clave con varios términos (cualquiera de ellos)
+const SECTORES: { nombre: string; q: string }[] = [
+  { nombre: "Tecnología", q: "software, sistemas de información, plataforma, licencias, computadores" },
+  { nombre: "Construcción", q: "obra, construcción, mejoramiento, pavimentación, mantenimiento de vías" },
+  { nombre: "Interventoría", q: "interventoría, supervisión" },
+  { nombre: "Salud", q: "dotación hospitalaria, medicamentos, insumos médicos, salud" },
+  { nombre: "Papelería y aseo", q: "papelería, útiles de oficina, aseo, cafetería" },
+  { nombre: "Consultoría", q: "consultoría, asesoría, estudios y diseños" },
+  { nombre: "Dotación y vestuario", q: "dotación, uniformes, vestuario, calzado" },
+  { nombre: "Alimentación", q: "alimentos, suministro de alimentación, refrigerios, mercados" },
+];
 
 const cop = (n: number | null) =>
   n == null ? "—" : new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
@@ -56,7 +70,7 @@ export default function Home() {
   const [permitidas, setPermitidas] = useState<Frecuencia[]>(["daily"]);
 
   const set = <K extends keyof F>(k: K, v: F[K]) => setF((x) => ({ ...x, [k]: v }));
-  const extrasActivos = [f.modalidad, f.estado, f.departamento, f.desde, f.hasta].filter(Boolean).length;
+  const extrasActivos = [f.modalidad, f.estado, f.departamento, f.desde, f.hasta, f.valorMin, f.valorMax].filter(Boolean).length;
 
   // Los selectores se cargan desde los datos reales, para que coincidan exactamente con SECOP
   useEffect(() => {
@@ -135,7 +149,7 @@ export default function Home() {
             type="search"
             aria-label="Palabra clave (objeto del proceso)"
             value={f.q}
-            placeholder="Palabra clave: software, dotación, interventoría"
+            placeholder="Palabra clave (separa varias con coma): software, dotación"
             onChange={(e) => set("q", e.target.value)}
           />
           <select aria-label="Plataforma" value={f.source} onChange={(e) => set("source", e.target.value as F["source"])}>
@@ -144,6 +158,15 @@ export default function Home() {
             <option value="both">Ambas</option>
           </select>
           <button disabled={loading}>{loading && page === 0 ? "Buscando…" : "Buscar"}</button>
+        </div>
+
+        <div className="sectores" role="group" aria-label="Atajos por sector">
+          <span className="muted">Atajos:</span>
+          {SECTORES.map((x) => (
+            <button type="button" key={x.nombre} className={`chip-btn${f.q === x.q ? " on" : ""}`} onClick={() => { set("q", f.q === x.q ? "" : x.q); if (!alarmName) setAlarmName(x.nombre); }}>
+              {x.nombre}
+            </button>
+          ))}
         </div>
 
         <details className="mas">
@@ -169,6 +192,12 @@ export default function Home() {
                 <option value="">Todos</option>
                 {facets.departamentos.map((m) => <option key={m}>{m}</option>)}
               </select>
+            </label>
+            <label>Valor mínimo (COP, SECOP II)
+              <input type="number" inputMode="numeric" min="0" step="1000000" placeholder="Ej. 50000000" value={f.valorMin} onChange={(e) => set("valorMin", e.target.value)} />
+            </label>
+            <label>Valor máximo (COP, SECOP II)
+              <input type="number" inputMode="numeric" min="0" step="1000000" placeholder="Ej. 500000000" value={f.valorMax} onChange={(e) => set("valorMax", e.target.value)} />
             </label>
             <label>Publicado desde
               <input type="date" value={f.desde} onChange={(e) => set("desde", e.target.value)} />
