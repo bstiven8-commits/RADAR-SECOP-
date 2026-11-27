@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Logo } from "@/components/Icons";
 import { GUIAS } from "@/lib/guias";
+import { GENERALES } from "@/lib/guias-generales";
 
 const NOMBRE = process.env.NEXT_PUBLIC_APP_NAME ?? "Radar SECOP";
 
@@ -20,6 +21,15 @@ export default function Guias() {
       <Link href="/" className="volver">Volver a la búsqueda</Link>
       <h1 className="titulo">Guías para venderle al Estado</h1>
       <p className="sub">Qué compra el Estado en cada sector, qué documentos piden y cómo empezar. Elige el tuyo.</p>
+      <h2 className="sec">Para empezar</h2>
+      <ul className="lista-guias">
+        {GENERALES.map((g) => (
+          <li key={g.slug}>
+            <Link href={`/guias/${g.slug}`}><strong>{g.nombre}</strong><span>{g.resumen}</span></Link>
+          </li>
+        ))}
+      </ul>
+      <h2 className="sec">Por sector</h2>
       <ul className="lista-guias">
         {GUIAS.map((g) => (
           <li key={g.slug}>

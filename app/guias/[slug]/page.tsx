@@ -4,17 +4,21 @@ import type { Metadata } from "next";
 import { Logo } from "@/components/Icons";
 import JsonLd from "@/components/JsonLd";
 import { AVISO, GUIAS, PASOS_BASE, guiaPor } from "@/lib/guias";
+import { GENERALES, generalPor } from "@/lib/guias-generales";
 import { parseFilters, search, type Proceso } from "@/lib/secop";
 
 export const revalidate = 3600;
 const NOMBRE = process.env.NEXT_PUBLIC_APP_NAME ?? "Radar SECOP";
 
 export function generateStaticParams() {
-  return GUIAS.map((g) => ({ slug: g.slug }));
+  return [...GUIAS, ...GENERALES].map((g) => ({ slug: g.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const g = guiaPor((await params).slug);
+  const slug = (await params).slug;
+  const ge = generalPor(slug);
+  if (ge) return { title: `${ge.titulo} — ${NOMBRE}`, description: ge.resumen, alternates: { canonical: `/guias/${ge.slug}` } };
+  const g = guiaPor(slug);
   if (!g) return {};
   return { title: `${g.titulo} — ${NOMBRE}`, description: g.resumen, alternates: { canonical: `/guias/${g.slug}` } };
 }
@@ -23,7 +27,10 @@ const cop = (n: number | null) =>
   n == null ? "" : new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
 
 export default async function GuiaPagina({ params }: { params: Promise<{ slug: string }> }) {
-  const g = guiaPor((await params).slug);
+  const slug = (await params).slug;
+  const ge = generalPor(slug);
+  if (ge) return <GuiaGeneralVista g={ge} />;
+  const g = guiaPor(slug);
   if (!g) notFound();
 
   // Procesos abiertos de este sector (ejemplo en vivo); si falla la consulta, la guía se muestra igual
@@ -107,9 +114,78 @@ export default async function GuiaPagina({ params }: { params: Promise<{ slug: s
         <h2 className="sec">Otras guías</h2>
         <ul className="otras-guias">
           {otras.map((x) => <li key={x.slug}><Link href={`/guias/${x.slug}`}>{x.nombre}</Link></li>)}
+          {GENERALES.map((x) => <li key={x.slug}><Link href={`/guias/${x.slug}`}>{x.nombre}</Link></li>)}
           <li><Link href="/departamentos">Procesos por departamento</Link></li>
         </ul>
 
+        <p className="muted pie">{AVISO}</p>
+      </article>
+    </div>
+  );
+}
+
+function GuiaGeneralVista({ g }: { g: (typeof GENERALES)[number] }) {
+  const base = (process.env.NEXT_PUBLIC_APP_URL ?? "https://alertasecop.com").replace(/\/$/, "");
+  const otras = GENERALES.filter((x) => x.slug !== g.slug);
+  return (
+    <div className="wrap">
+      <JsonLd
+        data={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: g.titulo,
+            description: g.resumen,
+            inLanguage: "es-CO",
+            mainEntityOfPage: `${base}/guias/${g.slug}`,
+            publisher: { "@type": "Organization", name: NOMBRE, url: base },
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Inicio", item: base },
+              { "@type": "ListItem", position: 2, name: "Guías", item: `${base}/guias` },
+              { "@type": "ListItem", position: 3, name: g.nombre, item: `${base}/guias/${g.slug}` },
+            ],
+          },
+        ]}
+      />
+      <header className="top">
+        <Link href="/" className="brand" aria-label="Radar SECOP, inicio"><Logo /><span>{NOMBRE}</span></Link>
+      </header>
+      <Link href="/guias" className="volver">Todas las guías</Link>
+      <article className="guia">
+        <h1 className="titulo">{g.titulo}</h1>
+        <p className="sub">{g.resumen}</p>
+        {g.secciones.map((s) => (
+          <section key={s.t}>
+            <h2 className="sec">{s.t}</h2>
+            {s.p?.map((x) => <p key={x}>{x}</p>)}
+            {s.l && <ul>{s.l.map((x) => <li key={x}>{x}</li>)}</ul>}
+          </section>
+        ))}
+
+        <section className="alarma" aria-label="Busca procesos">
+          <div className="alarma-texto">
+            <strong>Encuentra procesos para empezar</strong>
+            <span>Busca procesos abiertos y crea una alarma para recibir los nuevos en tu correo.</span>
+          </div>
+          <Link href="/" className="chip-btn enlace">Ir al buscador →</Link>
+        </section>
+
+        <h2 className="sec">Sigue leyendo</h2>
+        <ul className="otras-guias">
+          {otras.map((x) => <li key={x.slug}><Link href={`/guias/${x.slug}`}>{x.nombre}</Link></li>)}
+          <li><Link href="/guias">Guías por sector</Link></li>
+          <li><Link href="/departamentos">Procesos por departamento</Link></li>
+        </ul>
+
+        {g.fuentes && (
+          <p className="muted">
+            Fuentes: {g.fuentes.map((f, i) => <span key={f.u}>{i > 0 ? " · " : ""}<a href={f.u} target="_blank" rel="noopener noreferrer">{f.t}</a></span>)}
+          </p>
+        )}
         <p className="muted pie">{AVISO}</p>
       </article>
     </div>
