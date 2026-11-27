@@ -172,9 +172,14 @@ export default function Buscador({
   // Llegada desde /departamento/...: precarga el departamento y busca
   const [auto, setAuto] = useState(false);
   useEffect(() => {
-    const d = new URLSearchParams(window.location.search).get("departamento");
+    const sp = new URLSearchParams(window.location.search);
+    const d = sp.get("departamento");
+    const q = sp.get("q");
     if (d) {
       setF((x) => ({ ...x, source: "secop2", departamento: d, abiertos: "1" }));
+      setAuto(true);
+    } else if (q) {
+      setF((x) => ({ ...x, q: q.slice(0, 200), abiertos: "1", source: "secop2" }));
       setAuto(true);
     }
   }, []);
@@ -258,6 +263,7 @@ export default function Buscador({
             </button>
           ))}
           <Link href="/departamentos" className="chip-btn enlace">Por departamento →</Link>
+          <Link href="/guias" className="chip-btn enlace">Guías →</Link>
         </div>
 
         <details className="mas">
@@ -402,7 +408,7 @@ export default function Buscador({
 
       <p className="muted pie">
         Datos abiertos de Colombia Compra Eficiente (datos.gov.co). La información la registran las entidades; verifica siempre en SECOP.
-        {" "}<Link href="/departamentos">Por departamento</Link> · <Link href="/privacidad">Política de datos</Link> · <Link href="/terminos">Términos</Link> · <Link href="/devoluciones">Devoluciones</Link>
+        {" "}<Link href="/departamentos">Por departamento</Link> · <Link href="/guias">Guías por sector</Link> · <Link href="/privacidad">Política de datos</Link> · <Link href="/terminos">Términos</Link> · <Link href="/devoluciones">Devoluciones</Link>
       </p>
     </div>
   );
