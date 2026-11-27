@@ -44,6 +44,7 @@ export async function GET(req: Request) {
       },
     });
   } catch (e) {
-    return NextResponse.json({ error: (e as Error).message }, { status: 502 });
+    console.error("Exportación falló:", (e as Error).message);
+    return NextResponse.json({ error: "No pudimos generar el archivo en este momento. Inténtalo de nuevo." }, { status: 502 });
   }
 }

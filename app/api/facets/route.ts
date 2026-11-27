@@ -14,6 +14,7 @@ export async function GET(req: Request) {
     ]);
     return NextResponse.json({ modalidades, estados, departamentos });
   } catch (e) {
-    return NextResponse.json({ error: (e as Error).message }, { status: 502 });
+    console.error("Facets falló:", (e as Error).message);
+    return NextResponse.json({ error: "No pudimos cargar los filtros en este momento." }, { status: 502 });
   }
 }
