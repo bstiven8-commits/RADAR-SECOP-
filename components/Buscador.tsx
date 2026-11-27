@@ -85,6 +85,8 @@ export default function Buscador({
   const [alarmMsg, setAlarmMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [frecuencia, setFrecuencia] = useState<Frecuencia>("daily");
   const [permitidas, setPermitidas] = useState<Frecuencia[]>(["daily"]);
+  const [guardados, setGuardados] = useState<Set<string>>(new Set());
+  const [favMsg, setFavMsg] = useState("");
 
   const set = <K extends keyof F>(k: K, v: F[K]) => setF((x) => ({ ...x, [k]: v }));
   const extrasActivos = [f.modalidad, f.estado, f.desde, f.hasta, f.valorMin, f.valorMax, f.abiertos].filter(Boolean).length;
@@ -109,6 +111,37 @@ export default function Buscador({
       .then((d) => Array.isArray(d.frecuencias) && setPermitidas(d.frecuencias))
       .catch(() => {});
   }, [session]);
+
+  // Procesos que el usuario ya guardó (para marcar la estrella)
+  useEffect(() => {
+    if (!session) return setGuardados(new Set());
+    fetch("/api/favoritos", { headers: { Authorization: `Bearer ${session.access_token}` } })
+      .then((r) => r.json())
+      .then((d) => Array.isArray(d.favoritos) && setGuardados(new Set(d.favoritos.map((x: { source: string; proceso_id: string }) => `${x.source}:${x.proceso_id}`))))
+      .catch(() => {});
+  }, [session]);
+
+  async function alternarFavorito(p: Proceso) {
+    setFavMsg("");
+    if (!session) return setFavMsg("Registra tu correo arriba para guardar procesos.");
+    const clave = `${p.source}:${p.id}`;
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` };
+    const ya = guardados.has(clave);
+    const r = ya
+      ? await fetch(`/api/favoritos?source=${p.source}&id=${encodeURIComponent(p.id)}`, { method: "DELETE", headers })
+      : await fetch("/api/favoritos", {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ source: p.source, id: p.id, objeto: p.objeto, entidad: p.entidad, valor: p.valor, cierre: p.cierre, url: p.url }),
+        });
+    if (!r.ok) return setFavMsg((await r.json().catch(() => ({}))).error ?? "No pudimos guardar el proceso");
+    setGuardados((s) => {
+      const n = new Set(s);
+      if (ya) n.delete(clave);
+      else n.add(clave);
+      return n;
+    });
+  }
 
   const buscar = useCallback(
     async (pagina: number) => {
@@ -300,6 +333,7 @@ export default function Buscador({
         </div>
       )}
 
+      {favMsg && <p className="error" role="alert">{favMsg}</p>}
       {items.map((p) => (
         <article className="fila" key={p.key}>
           <div>
@@ -317,6 +351,9 @@ export default function Buscador({
           </div>
           <div className="cifra">
             <strong>{cop(p.valor)}</strong>
+            <button type="button" className="link" aria-pressed={guardados.has(`${p.source}:${p.id}`)} onClick={() => alternarFavorito(p)}>
+              {guardados.has(`${p.source}:${p.id}`) ? "★ Guardado" : "☆ Guardar"}
+            </button>
             <Link href={`/proceso/${p.source}/${encodeURIComponent(p.id)}`}>Ver detalle</Link>
             {p.url && <a href={p.url} target="_blank" rel="noopener noreferrer">Abrir en SECOP</a>}
           </div>

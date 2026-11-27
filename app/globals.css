@@ -201,3 +201,6 @@ button.peligro { background: var(--error); border-color: var(--error); color: va
 .resumen .muted { order: 2; }
 
 .trampa { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+.fav-controles { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.fav-controles input { flex: 1 1 220px; }

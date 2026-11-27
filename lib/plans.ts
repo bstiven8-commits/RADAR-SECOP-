@@ -13,10 +13,10 @@ export const FRECUENCIAS: Record<Frecuencia, { etiqueta: string; minutos: number
 
 export const FRECUENCIA_POR_DEFECTO: Frecuencia = "daily";
 
-export const PLAN_LIMITS: Record<Plan, { alarmas: number; frecuencias: Frecuencia[] }> = {
-  free: { alarmas: 5, frecuencias: ["daily"] },
-  pro: { alarmas: 25, frecuencias: ["daily", "hourly", "15min"] },
-  business: { alarmas: 100, frecuencias: ["daily", "hourly", "15min"] },
+export const PLAN_LIMITS: Record<Plan, { alarmas: number; favoritos: number; frecuencias: Frecuencia[] }> = {
+  free: { alarmas: 5, favoritos: 10, frecuencias: ["daily"] },
+  pro: { alarmas: 25, favoritos: 200, frecuencias: ["daily", "hourly", "15min"] },
+  business: { alarmas: 100, favoritos: 1000, frecuencias: ["daily", "hourly", "15min"] },
 };
 
 export function esFrecuencia(v: unknown): v is Frecuencia {

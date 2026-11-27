@@ -37,6 +37,7 @@ export default function AuthBar() {
       <div className="authbar">
         <span>{session.user.email}</span>
         <Link href="/alarmas">Mis alarmas</Link>
+        <Link href="/favoritos">Guardados</Link>
         <Link href="/precios">Planes</Link>
         <button className="link" onClick={() => supabaseBrowser().auth.signOut()}>Salir</button>
       </div>
