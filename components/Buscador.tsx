@@ -304,6 +304,29 @@ export default function Buscador({
         )}
       </form>
 
+      {!searched && (
+        <section className="como" aria-labelledby="como-titulo">
+          <h2 id="como-titulo" className="sec">Cómo funciona</h2>
+          <ol className="pasos">
+            <li>
+              <span className="num" aria-hidden="true">1</span>
+              <strong>Busca</strong>
+              <span>Por palabra clave, departamento, valor o modalidad, en SECOP I y II.</span>
+            </li>
+            <li>
+              <span className="num" aria-hidden="true">2</span>
+              <strong>Crea una alarma</strong>
+              <span>Guarda tu búsqueda con el botón de alarma. Con el plan gratis tienes 5.</span>
+            </li>
+            <li>
+              <span className="num" aria-hidden="true">3</span>
+              <strong>Recibe los nuevos</strong>
+              <span>Te llega un correo con cada proceso nuevo, antes de que cierre. Con Pro, hasta cada 15 minutos.</span>
+            </li>
+          </ol>
+        </section>
+      )}
+
       {searched && (
         <section className="alarma" aria-label="Crear una alarma con estos filtros">
           <div className="alarma-texto">
