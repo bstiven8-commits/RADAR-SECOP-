@@ -47,7 +47,7 @@ a { color: var(--spruce); text-underline-offset: 3px; }
 
 /* Encabezado */
 header.top {
-  display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: center; justify-content: space-between;
+  display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: flex-start; justify-content: space-between;
   padding-bottom: 20px; border-bottom: 1px solid var(--line); margin-bottom: 28px;
 }
 .brand { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-weight: 800; font-size: 20px; letter-spacing: -0.02em; }
@@ -218,3 +218,14 @@ button[aria-disabled="true"] { opacity: .6; cursor: progress; }
 .pasos strong { font-size: 17px; letter-spacing: -0.01em; }
 .pasos li > span:last-child { color: var(--muted); font-size: 14px; line-height: 1.5; }
 @media (max-width: 720px) { .pasos { grid-template-columns: 1fr; } }
+
+/* Registro: una fila (Planes, correo, botón) y el consentimiento debajo, alineado con el campo */
+form.authbar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px 12px; align-items: center; width: min(100%, 540px); margin-left: auto; }
+form.authbar .consent, form.authbar > span[role="status"] { grid-column: 1 / -1; text-align: left; }
+form.authbar > span[role="status"] { font-size: 14px; }
+form.authbar > a { font-weight: 600; white-space: nowrap; }
+@media (max-width: 720px) {
+  header.top { align-items: stretch; }
+  form.authbar { grid-template-columns: minmax(0, 1fr) auto; width: 100%; margin-left: 0; }
+  form.authbar > a { grid-column: 1 / -1; }
+}
