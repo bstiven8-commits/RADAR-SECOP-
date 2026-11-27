@@ -28,6 +28,7 @@ const ESTADOS: { v: Estado; t: string }[] = [
 
 const cop = (n: number | null) =>
   n == null ? "Sin valor" : new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
+const corto = (s: string) => (s ? (s.length > 80 ? `${s.slice(0, 80).trimEnd()}…` : s) : "proceso sin descripción");
 const dia = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("es-CO", { timeZone: "America/Bogota", day: "numeric", month: "short", year: "numeric" }) : "");
 
 export default function Favoritos() {
@@ -98,16 +99,16 @@ export default function Favoritos() {
                   <span className="plataforma">{f.source === "secop2" ? "SECOP II" : "SECOP I"}</span>
                   {f.cierre && <span>Cierre {dia(f.cierre)}</span>}
                 </div>
-                <h3>{f.objeto || "(sin descripción)"}</h3>
+                <h2 className="fila-titulo">{f.objeto || "(sin descripción)"}</h2>
                 <div className="entidad">{f.entidad}</div>
                 <div className="fav-controles">
-                  <select aria-label="Estado de seguimiento" value={f.estado_seguimiento} onChange={(e) => cambiar(f, { estado: e.target.value as Estado })}>
+                  <select aria-label={`Estado de seguimiento: ${corto(f.objeto)}`} value={f.estado_seguimiento} onChange={(e) => cambiar(f, { estado: e.target.value as Estado })}>
                     {ESTADOS.map((e) => <option key={e.v} value={e.v}>{e.t}</option>)}
                   </select>
                   <input
                     type="text"
                     maxLength={500}
-                    aria-label="Nota"
+                    aria-label={`Nota: ${corto(f.objeto)}`}
                     placeholder="Nota (ej. pedir cotización a proveedor)"
                     defaultValue={f.nota}
                     onBlur={(e) => e.target.value !== f.nota && cambiar(f, { nota: e.target.value })}
@@ -116,9 +117,9 @@ export default function Favoritos() {
               </div>
               <div className="cifra">
                 <strong>{cop(f.valor)}</strong>
-                <Link href={`/proceso/${f.source}/${encodeURIComponent(f.proceso_id)}`}>Ver detalle</Link>
-                {f.url && <a href={f.url} target="_blank" rel="noopener noreferrer">Abrir en SECOP</a>}
-                <button type="button" className="link" onClick={() => quitar(f)}>Quitar</button>
+                <Link href={`/proceso/${f.source}/${encodeURIComponent(f.proceso_id)}`} aria-label={`Ver detalle: ${corto(f.objeto)}`}>Ver detalle</Link>
+                {f.url && <a href={f.url} target="_blank" rel="noopener noreferrer" aria-label={`Abrir en SECOP (se abre en otra pestaña): ${corto(f.objeto)}`}>Abrir en SECOP</a>}
+                <button type="button" className="link" aria-label={`Quitar de guardados: ${corto(f.objeto)}`} onClick={() => quitar(f)}>Quitar</button>
               </div>
             </article>
           ))}

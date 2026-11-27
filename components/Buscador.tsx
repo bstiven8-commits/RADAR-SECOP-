@@ -67,6 +67,8 @@ interface Props {
   inicial?: Inicial;
 }
 
+const corto = (s: string) => (s ? (s.length > 80 ? `${s.slice(0, 80).trimEnd()}…` : s) : "proceso sin descripción");
+
 export default function Buscador({
   titulo = "Procesos de contratación pública, SECOP I y II",
   sub = "Busca por palabra clave, modalidad o departamento. Crea una alarma y te escribimos cuando aparezcan procesos nuevos.",
@@ -87,6 +89,7 @@ export default function Buscador({
   const [permitidas, setPermitidas] = useState<Frecuencia[]>(["daily"]);
   const [guardados, setGuardados] = useState<Set<string>>(new Set());
   const [favMsg, setFavMsg] = useState("");
+  const [favAviso, setFavAviso] = useState("");
 
   const set = <K extends keyof F>(k: K, v: F[K]) => setF((x) => ({ ...x, [k]: v }));
   const extrasActivos = [f.modalidad, f.estado, f.desde, f.hasta, f.valorMin, f.valorMax, f.abiertos].filter(Boolean).length;
@@ -123,6 +126,7 @@ export default function Buscador({
 
   async function alternarFavorito(p: Proceso) {
     setFavMsg("");
+    setFavAviso("");
     if (!session) return setFavMsg("Registra tu correo arriba para guardar procesos.");
     const clave = `${p.source}:${p.id}`;
     const headers = { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` };
@@ -141,6 +145,7 @@ export default function Buscador({
       else n.add(clave);
       return n;
     });
+    setFavAviso(ya ? "Proceso quitado de tus guardados" : "Proceso guardado");
   }
 
   const buscar = useCallback(
@@ -320,6 +325,10 @@ export default function Buscador({
         </section>
       )}
 
+      <p className="sr-only" role="status" aria-live="polite">
+        {loading ? "Buscando…" : searched && !error ? (items.length ? `${items.length} ${items.length === 1 ? "proceso encontrado" : "procesos encontrados"}${hasMore ? " o más" : ""}` : "Sin resultados") : ""}
+      </p>
+      <p className="sr-only" role="status" aria-live="polite">{favAviso}</p>
       {error && <p className="error" role="alert">{error}</p>}
       {searched && !loading && !items.length && !error && (
         <p className="muted">No hay procesos con esos filtros. Prueba con otra palabra o quita algún filtro.</p>
@@ -346,23 +355,23 @@ export default function Buscador({
               {p.cierre && <span>Cierre {dia(p.cierre)}</span>}
               {p.ofertas != null && <span>{p.ofertas} {p.ofertas === 1 ? "oferta" : "ofertas"}</span>}
             </div>
-            <h3>{p.objeto || "(sin descripción)"}</h3>
+            <h2 className="fila-titulo">{p.objeto || "(sin descripción)"}</h2>
             <div className="entidad">{p.entidad}{[p.ciudad, p.departamento].filter(Boolean).length ? `, ${[p.ciudad, p.departamento].filter(Boolean).join(", ")}` : ""}</div>
           </div>
           <div className="cifra">
             <strong>{cop(p.valor)}</strong>
-            <button type="button" className="link" aria-pressed={guardados.has(`${p.source}:${p.id}`)} onClick={() => alternarFavorito(p)}>
-              {guardados.has(`${p.source}:${p.id}`) ? "★ Guardado" : "☆ Guardar"}
+            <button type="button" className="link" aria-pressed={guardados.has(`${p.source}:${p.id}`)} aria-label={`Guardar proceso: ${corto(p.objeto)}`} onClick={() => alternarFavorito(p)}>
+              <span aria-hidden="true">{guardados.has(`${p.source}:${p.id}`) ? "★" : "☆"}</span> {guardados.has(`${p.source}:${p.id}`) ? "Guardado" : "Guardar"}
             </button>
-            <Link href={`/proceso/${p.source}/${encodeURIComponent(p.id)}`}>Ver detalle</Link>
-            {p.url && <a href={p.url} target="_blank" rel="noopener noreferrer">Abrir en SECOP</a>}
+            <Link href={`/proceso/${p.source}/${encodeURIComponent(p.id)}`} aria-label={`Ver detalle: ${corto(p.objeto)}`}>Ver detalle</Link>
+            {p.url && <a href={p.url} target="_blank" rel="noopener noreferrer" aria-label={`Abrir en SECOP (se abre en otra pestaña): ${corto(p.objeto)}`}>Abrir en SECOP</a>}
           </div>
         </article>
       ))}
 
       {hasMore && (
         <div className="mas-resultados">
-          <button className="ghost" disabled={loading} onClick={() => buscar(page + 1)}>
+          <button className="ghost" aria-disabled={loading} onClick={() => !loading && buscar(page + 1)}>
             {loading ? "Cargando…" : "Cargar más"}
           </button>
         </div>

@@ -48,7 +48,9 @@ export default function AuthBar() {
     <form className="authbar" onSubmit={entrar}>
       <Link href="/precios">Planes</Link>
       <input type="email" required aria-label="Tu correo" placeholder="tu@correo.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-      <input type="text" name="web" tabIndex={-1} autoComplete="off" aria-hidden="true" className="trampa" value={web} onChange={(e) => setWeb(e.target.value)} />
+      <div className="trampa" aria-hidden="true" inert>
+        <input type="text" name="web" tabIndex={-1} autoComplete="off" value={web} onChange={(e) => setWeb(e.target.value)} />
+      </div>
       <button disabled={busy}>Registrarme / Entrar</button>
       {msg && <span className="muted" role="status">{msg}</span>}
       <label className="consent check-consent">

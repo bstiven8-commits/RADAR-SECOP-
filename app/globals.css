@@ -10,6 +10,7 @@
   --signal-soft: #fff3c4;
   --signal-line: #e0b100;
   --focus: #0e5a43;
+  --control: #7d8a83;
   --error: #a42a1c;
 }
 @media (prefers-color-scheme: dark) {
@@ -24,6 +25,7 @@
     --signal-soft: #2e2606;
     --signal-line: #8a6a00;
     --focus: #3dbe8b;
+    --control: #6c7d74;
     --error: #ff8b7a;
   }
 }
@@ -64,12 +66,12 @@ header.top {
 .sub { margin: 0 0 24px; color: var(--muted); max-width: 56ch; }
 
 /* Controles */
-input, select, button { font: inherit; font-size: 15px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); color: var(--ink); min-height: 44px; }
+input, select, button { font: inherit; font-size: 15px; padding: 10px 12px; border: 1px solid var(--control); border-radius: 6px; background: var(--card); color: var(--ink); min-height: 44px; }
 input::placeholder { color: var(--muted); opacity: .85; }
 button { background: var(--spruce); color: var(--on-spruce); border-color: var(--spruce); font-weight: 700; cursor: pointer; }
 button:hover:not(:disabled) { filter: brightness(1.08); }
 button:disabled { opacity: .55; cursor: default; }
-button.ghost { background: transparent; color: var(--ink); border-color: var(--line); font-weight: 600; }
+button.ghost { background: transparent; color: var(--ink); border-color: var(--control); font-weight: 600; }
 button.ghost:hover:not(:disabled) { border-color: var(--ink); filter: none; }
 button.link { background: none; border: 0; color: var(--spruce); padding: 0 4px; min-height: 0; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 
@@ -107,7 +109,7 @@ button.link { background: none; border: 0; color: var(--spruce); padding: 0 4px;
 .resumen { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 8px; border-bottom: 2px solid var(--ink); font-weight: 700; }
 .resumen .muted { font-weight: 400; }
 .fila { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 28px; padding: 18px 0; border-bottom: 1px solid var(--line); }
-.fila h3 { margin: 4px 0 6px; font-size: 17px; line-height: 1.3; font-weight: 700; letter-spacing: -0.01em; max-width: 70ch; }
+.fila h2, .fila h3 { margin: 4px 0 6px; font-size: 17px; line-height: 1.3; font-weight: 700; letter-spacing: -0.01em; max-width: 70ch; }
 .fila .entidad { color: var(--muted); font-size: 14px; }
 .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; font-size: 13px; color: var(--muted); }
 .plataforma { font-weight: 700; color: var(--ink); border: 1px solid var(--ink); border-radius: 3px; padding: 0 6px; font-size: 12px; }
@@ -204,3 +206,7 @@ button.peligro { background: var(--error); border-color: var(--error); color: va
 
 .fav-controles { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .fav-controles input { flex: 1 1 220px; }
+
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+button[aria-disabled="true"] { opacity: .6; cursor: progress; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
