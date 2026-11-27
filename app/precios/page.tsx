@@ -61,7 +61,7 @@ export default function Precios() {
 
       <Link href="/" className="volver">Volver a la búsqueda</Link>
       <h1 className="titulo">Planes</h1>
-      <p className="sub">Más alarmas y revisiones más frecuentes para llegar primero a cada proceso. Pagas {DIAS_PLAN} días a la vez, sin renovación automática.</p>
+      <p className="sub">Más alarmas y revisiones más frecuentes para enterarte antes de los procesos que te interesan. Pagas {DIAS_PLAN} días a la vez, sin renovación automática.</p>
 
       {error && <p className="error" role="alert">{error}</p>}
 

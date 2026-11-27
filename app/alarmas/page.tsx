@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import AuthBar from "@/components/AuthBar";
 import { useSession } from "@/lib/use-session";
+import { supabaseBrowser } from "@/lib/supabase-browser";
 import { Logo } from "@/components/Icons";
 import { FRECUENCIAS, type Frecuencia } from "@/lib/plans";
 
@@ -26,6 +27,8 @@ export default function Alarmas() {
   const [alarms, setAlarms] = useState<Alarm[]>([]);
   const [info, setInfo] = useState<{ plan: string; limite: number; frecuencias: Frecuencia[] }>({ plan: "free", limite: 0, frecuencias: ["daily"] });
   const [error, setError] = useState("");
+  const [confirmando, setConfirmando] = useState(false);
+  const [borrando, setBorrando] = useState(false);
 
   const auth = useCallback(() => ({ Authorization: `Bearer ${session?.access_token}` }), [session]);
 
@@ -57,6 +60,19 @@ export default function Alarmas() {
   }
 
   const pct = info.limite ? Math.min(100, Math.round((alarms.length / info.limite) * 100)) : 0;
+
+  async function eliminarCuenta() {
+    setBorrando(true);
+    setError("");
+    const r = await fetch("/api/cuenta", { method: "DELETE", headers: auth() });
+    if (!r.ok) {
+      setError((await r.json().catch(() => ({}))).error ?? "No pudimos eliminar la cuenta.");
+      setBorrando(false);
+      return;
+    }
+    await supabaseBrowser().auth.signOut();
+    window.location.href = "/";
+  }
 
   return (
     <div className="wrap">
@@ -104,6 +120,23 @@ export default function Alarmas() {
               </div>
             </article>
           ))}
+
+          <section className="zona-datos" aria-label="Tus datos">
+            <h2 className="sec">Tus datos</h2>
+            <p className="muted">
+              Puedes eliminar tu cuenta cuando quieras. Se borran tu correo, tus alarmas y tus registros de pago en {NOMBRE}. No se puede deshacer.
+              Si solo quieres dejar de recibir correos, pausa tus alarmas o usa el enlace de baja de cualquier correo.
+            </p>
+            {!confirmando ? (
+              <button type="button" className="ghost" onClick={() => setConfirmando(true)}>Eliminar mi cuenta</button>
+            ) : (
+              <div className="controles">
+                <strong>¿Seguro? Se borrará todo.</strong>
+                <button type="button" className="peligro" disabled={borrando} onClick={eliminarCuenta}>{borrando ? "Eliminando…" : "Sí, eliminar mi cuenta"}</button>
+                <button type="button" className="ghost" disabled={borrando} onClick={() => setConfirmando(false)}>Cancelar</button>
+              </div>
+            )}
+          </section>
         </>
       )}
     </div>

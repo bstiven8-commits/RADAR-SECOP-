@@ -187,3 +187,12 @@ button.link { background: none; border: 0; color: var(--spruce); padding: 0 4px;
 .lista-deptos a:hover { text-decoration: underline; }
 
 .chip-btn.enlace { display: inline-flex; align-items: center; text-decoration: none; border-style: dashed; }
+
+/* Cumplimiento y accesibilidad */
+.saltar { position: absolute; left: 12px; top: -60px; z-index: 10; background: var(--ink); color: var(--paper); padding: 10px 14px; border-radius: 6px; font-weight: 700; text-decoration: none; }
+.saltar:focus { top: 12px; }
+main:focus { outline: none; }
+.authbar .check-consent { display: flex; align-items: flex-start; gap: 8px; text-align: left; }
+.authbar .check-consent input { min-height: 0; width: 18px; height: 18px; margin-top: 1px; flex: none; }
+.zona-datos { margin-top: 48px; padding-top: 8px; border-top: 1px solid var(--line); max-width: 70ch; }
+button.peligro { background: var(--error); border-color: var(--error); color: var(--paper); }

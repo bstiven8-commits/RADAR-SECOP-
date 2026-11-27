@@ -41,9 +41,12 @@ export default function AuthBar() {
       <input type="email" required aria-label="Tu correo" placeholder="tu@correo.com" value={email} onChange={(e) => setEmail(e.target.value)} />
       <button disabled={busy}>Registrarme / Entrar</button>
       {msg && <span className="muted" role="status">{msg}</span>}
-      <span className="consent">
-        Al registrarte aceptas la <Link href="/privacidad">política de tratamiento de datos</Link>.
-      </span>
+      <label className="consent check-consent">
+        <input type="checkbox" required />
+        <span>
+          Soy mayor de 18 años y autorizo el tratamiento de mis datos según la <Link href="/privacidad">política de datos</Link> y acepto los <Link href="/terminos">términos</Link>.
+        </span>
+      </label>
     </form>
   );
 }

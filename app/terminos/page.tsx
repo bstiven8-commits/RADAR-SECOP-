@@ -28,7 +28,7 @@ export default function Terminos() {
       </p>
 
       <h3>3. Cuenta</h3>
-      <p>Para crear alarmas se usa el correo electrónico del usuario, con un enlace de acceso. El usuario es responsable de mantener el acceso a su correo y de la información que registre.</p>
+      <p>El servicio es solo para mayores de 18 años. Para crear alarmas se usa el correo electrónico del usuario, con un enlace de acceso. El usuario es responsable de mantener el acceso a su correo y de la información que registre.</p>
 
       <h3>4. Planes y pagos</h3>
       <p>
