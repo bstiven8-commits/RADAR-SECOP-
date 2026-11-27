@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { admin, userFromRequest } from "@/lib/supabase-server";
 import { esFrecuencia, FRECUENCIA_POR_DEFECTO, FRECUENCIAS, PLAN_LIMITS, planVigente, type Frecuencia, type Plan } from "@/lib/plans";
 import { parseFilters } from "@/lib/secop";
+import { telegramConfigurado } from "@/lib/telegram";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,10 @@ export async function GET(req: Request) {
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
   const { plan, vence } = await perfilDe(user.id);
+  const { data: tg } = await db.from("profiles").select("telegram_chat_id").eq("id", user.id).maybeSingle();
   return NextResponse.json({
+    telegramDisponible: telegramConfigurado(),
+    telegramConectado: !!tg?.telegram_chat_id,
     alarms: alarms ?? [],
     plan,
     vence: plan === "free" ? null : vence,

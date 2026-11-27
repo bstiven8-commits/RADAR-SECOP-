@@ -27,6 +27,8 @@ export default function Alarmas() {
   const [alarms, setAlarms] = useState<Alarm[]>([]);
   const [info, setInfo] = useState<{ plan: string; limite: number; frecuencias: Frecuencia[] }>({ plan: "free", limite: 0, frecuencias: ["daily"] });
   const [error, setError] = useState("");
+  const [tg, setTg] = useState<{ disponible: boolean; conectado: boolean }>({ disponible: false, conectado: false });
+  const [tgLink, setTgLink] = useState("");
   const [confirmando, setConfirmando] = useState(false);
   const [borrando, setBorrando] = useState(false);
 
@@ -38,6 +40,7 @@ export default function Alarmas() {
     const d = await r.json();
     if (!r.ok) return setError(d.error);
     setAlarms(d.alarms);
+    setTg({ disponible: !!d.telegramDisponible, conectado: !!d.telegramConectado });
     setInfo({ plan: d.plan, limite: d.limite, frecuencias: d.frecuencias ?? ["daily"] });
   }, [session, auth]);
 
@@ -60,6 +63,22 @@ export default function Alarmas() {
   }
 
   const pct = info.limite ? Math.min(100, Math.round((alarms.length / info.limite) * 100)) : 0;
+
+  async function conectarTelegram() {
+    setError("");
+    const r = await fetch("/api/telegram/vincular", { method: "POST", headers: auth() });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) return setError(d.error ?? "No pudimos generar el enlace");
+    setTgLink(d.url);
+    window.open(d.url, "_blank", "noopener");
+  }
+
+  async function desconectarTelegram() {
+    const r = await fetch("/api/telegram/vincular", { method: "DELETE", headers: auth() });
+    if (!r.ok) return setError("No pudimos desvincular Telegram");
+    setTg((t) => ({ ...t, conectado: false }));
+    setTgLink("");
+  }
 
   async function eliminarCuenta() {
     setBorrando(true);
@@ -120,6 +139,26 @@ export default function Alarmas() {
               </div>
             </article>
           ))}
+
+          {tg.disponible && (
+            <section className="zona-datos" aria-label="Avisos por Telegram">
+              <h2 className="sec">Avisos por Telegram</h2>
+              {info.plan === "free" ? (
+                <p className="muted">Recibe los procesos nuevos también en Telegram. Es parte de los planes <Link href="/precios">Pro y Business</Link>.</p>
+              ) : tg.conectado ? (
+                <div className="controles">
+                  <span className="ok">Conectado. Te avisaremos por Telegram además del correo.</span>
+                  <button type="button" className="ghost" onClick={desconectarTelegram}>Desconectar</button>
+                </div>
+              ) : (
+                <>
+                  <p className="muted">Pulsa el botón, abre el bot en Telegram y toca “Iniciar”. El enlace vale 15 minutos.</p>
+                  <button type="button" onClick={conectarTelegram}>Conectar Telegram</button>
+                  {tgLink && <p className="muted">Si no se abrió, <a href={tgLink} target="_blank" rel="noopener noreferrer">abre este enlace</a>. Cuando termines, recarga la página.</p>}
+                </>
+              )}
+            </section>
+          )}
 
           <section className="zona-datos" aria-label="Tus datos">
             <h2 className="sec">Tus datos</h2>

@@ -5,6 +5,7 @@ import { digestHtml, sendEmail, type Digest } from "@/lib/email";
 import { bajaUrl } from "@/lib/unsub";
 import { esFrecuencia, FRECUENCIA_POR_DEFECTO, PLAN_LIMITS, planVigente, type Plan } from "@/lib/plans";
 import { tocaRevisar } from "@/lib/frecuencia";
+import { enviar, mensajesDigest, telegramConfigurado } from "@/lib/telegram";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -90,8 +91,9 @@ export async function GET(req: Request) {
   }
 
   let correos = 0;
+  let telegram = 0;
   for (const [userId, digests] of porUsuario) {
-    const { data: perfil } = await db.from("profiles").select("email").eq("id", userId).maybeSingle();
+    const { data: perfil } = await db.from("profiles").select("email,telegram_chat_id").eq("id", userId).maybeSingle();
     if (!perfil?.email) continue;
     const total = digests.reduce((n, d) => n + d.procesos.length, 0);
     try {
@@ -101,7 +103,24 @@ export async function GET(req: Request) {
     } catch (e) {
       console.error(`Correo a ${userId} falló:`, (e as Error).message);
     }
+
+    // Telegram: solo planes de pago con el chat vinculado
+    if (perfil.telegram_chat_id && telegramConfigurado() && (planDe.get(userId) ?? "free") !== "free") {
+      try {
+        for (const m of mensajesDigest(digests, appUrl)) {
+          const r = await enviar(perfil.telegram_chat_id, m);
+          if (!r.ok && (r.codigo === 403 || r.codigo === 400)) {
+            // El usuario bloqueó o borró el bot: se desvincula para no insistir
+            await db.from("profiles").update({ telegram_chat_id: null }).eq("id", userId);
+            break;
+          }
+        }
+        telegram++;
+      } catch (e) {
+        console.error(`Telegram a ${userId} falló:`, (e as Error).message);
+      }
+    }
   }
 
-  return NextResponse.json({ revisadas, omitidas, fallidas, correos });
+  return NextResponse.json({ revisadas, omitidas, fallidas, correos, telegram });
 }

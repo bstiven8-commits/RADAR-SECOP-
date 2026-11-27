@@ -31,6 +31,7 @@ export default function Privacidad() {
         <li><strong>Supabase</strong>: autenticación y base de datos (servidores en Estados Unidos).</li>
         <li><strong>Vercel</strong>: alojamiento del sitio (infraestructura en Estados Unidos y otras regiones).</li>
         <li><strong>Resend</strong>: envío de correos (Estados Unidos).</li>
+        <li><strong>Telegram</strong> (opcional): si conectas los avisos por Telegram, guardamos el identificador de tu chat para enviarte los mensajes.</li>
         <li><strong>Wompi</strong>: procesamiento de pagos. Los datos de tu medio de pago los captura Wompi; nosotros no los vemos ni los guardamos.</li>
       </ul>
       <p>Al usar el servicio autorizas que tu correo y tus alarmas se almacenen y procesen en esos proveedores, algunos fuera de Colombia (transferencia y transmisión internacional de datos).</p>
