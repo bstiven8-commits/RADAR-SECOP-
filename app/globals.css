@@ -199,3 +199,5 @@ button.peligro { background: var(--error); border-color: var(--error); color: va
 .resumen { align-items: center; gap: 12px; }
 .resumen .ghost { min-height: 36px; padding: 0 14px; font-size: 14px; margin-left: auto; }
 .resumen .muted { order: 2; }
+
+.trampa { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
