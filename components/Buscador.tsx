@@ -65,14 +65,16 @@ interface Props {
   titulo?: string;
   sub?: string;
   inicial?: Inicial;
+  ejemplos?: Proceso[];
 }
 
 const corto = (s: string) => (s ? (s.length > 80 ? `${s.slice(0, 80).trimEnd()}…` : s) : "proceso sin descripción");
 
 export default function Buscador({
-  titulo = "Procesos de contratación pública, SECOP I y II",
-  sub = "Busca por palabra clave, modalidad o departamento. Crea una alarma y te escribimos cuando aparezcan procesos nuevos.",
+  titulo = "Entérate primero de cada contrato público",
+  sub = "Busca en SECOP I y II y recibe un correo cuando aparezcan procesos nuevos de tu sector, sin revisar el portal todos los días.",
   inicial,
+  ejemplos = [],
 }: Props) {
   const { session } = useSession();
   const [f, setF] = useState<F>(inicial ? { ...VACIO, departamento: inicial.departamento, abiertos: "1" } : VACIO);
@@ -309,6 +311,23 @@ export default function Buscador({
           </div>
         )}
       </form>
+
+      {!searched && ejemplos.length > 0 && (
+        <section className="ejemplos-bloque" aria-labelledby="ej-titulo">
+          <h2 id="ej-titulo" className="sec">Abiertos ahora</h2>
+          <p className="muted">Procesos de SECOP II recién publicados que todavía reciben ofertas.</p>
+          <ul className="ejemplos">
+            {ejemplos.map((p) => (
+              <li key={p.key}>
+                <span className="meta">{p.modalidad}{p.cierre ? ` · Cierre ${dia(p.cierre)}` : ""}</span>
+                <Link href={`/proceso/${p.source}/${encodeURIComponent(p.id)}`} className="ej-titulo">{p.objeto || "(sin descripción)"}</Link>
+                <span className="entidad">{p.entidad}</span>
+                <strong>{cop(p.valor)}</strong>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {!searched && (
         <section className="como" aria-labelledby="como-titulo">

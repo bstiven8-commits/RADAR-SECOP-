@@ -243,3 +243,34 @@ form.authbar > a { font-weight: 600; white-space: nowrap; }
 .guia-procesos { list-style: none; padding: 0 !important; display: grid; gap: 10px; }
 .guia-procesos li { display: flex; flex-direction: column; gap: 2px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
 @media (max-width: 720px) { .lista-guias { grid-template-columns: 1fr; } }
+
+/* Pulido visual */
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+h1, h2, h3 { text-wrap: balance; }
+p, .sub, .muted { text-wrap: pretty; }
+.lead { font-size: clamp(30px, 5.4vw, 48px); }
+
+button, .chip-btn { transition-property: background-color, border-color, color, box-shadow, scale, filter; transition-duration: .15s; transition-timing-function: ease-out; }
+button:active:not(:disabled), .chip-btn:active { scale: .97; }
+.fila-principal button { box-shadow: 0 1px 2px rgba(14, 90, 67, .25), 0 4px 10px rgba(14, 90, 67, .18); }
+
+.pasos li, .lista-guias a, .ejemplos li, .guia .alarma { box-shadow: 0 1px 2px rgba(20, 33, 28, .06), 0 6px 16px rgba(20, 33, 28, .05); transition-property: box-shadow, border-color, translate; transition-duration: .18s; transition-timing-function: ease-out; }
+.lista-guias a:hover, .ejemplos li:hover { box-shadow: 0 2px 4px rgba(20, 33, 28, .08), 0 10px 24px rgba(20, 33, 28, .09); translate: 0 -2px; }
+.pasos li, .lista-guias a, .ejemplos li { border-radius: 8px; }
+.pasos li { border-top-left-radius: 8px; border-top-right-radius: 8px; }
+
+.ejemplos-bloque { margin: 32px 0 8px; }
+.ejemplos-bloque .sec { margin-top: 0; }
+.ejemplos { list-style: none; margin: 14px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.ejemplos li { display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--spruce); }
+.ejemplos .ej-titulo { font-weight: 700; font-size: 16px; line-height: 1.35; color: var(--ink); text-decoration: none; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.ejemplos .ej-titulo:hover { text-decoration: underline; text-underline-offset: 3px; }
+.ejemplos .entidad { color: var(--muted); font-size: 14px; }
+.ejemplos strong { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; margin-top: auto; }
+@media (max-width: 720px) { .ejemplos { grid-template-columns: 1fr; } }
+
+@keyframes aparece { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.fila { animation: aparece .35s ease-out both; }
+.fila:nth-child(2n) { animation-delay: .04s; }
+.fila:nth-child(3n) { animation-delay: .08s; }
+.fila:nth-child(4n) { animation-delay: .12s; }
