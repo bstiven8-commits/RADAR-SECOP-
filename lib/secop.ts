@@ -109,7 +109,9 @@ function where(src: SingleSource, f: Filters): string {
 async function getJson(url: string, revalidate?: number): Promise<Row[]> {
   const headers: Record<string, string> = { Accept: "application/json" };
   if (process.env.SOCRATA_TOKEN) headers["X-App-Token"] = process.env.SOCRATA_TOKEN;
-  const res = await fetch(url, revalidate ? { headers, next: { revalidate } } : { headers, cache: "no-store" });
+  // Tiempo límite de 8 s: si datos.gov.co no responde, falla rápido en vez de colgar la página o la compilación
+  const signal = AbortSignal.timeout(8000);
+  const res = await fetch(url, revalidate ? { headers, signal, next: { revalidate } } : { headers, signal, cache: "no-store" });
   if (!res.ok) throw new Error(`datos.gov.co respondió ${res.status}`);
   return (await res.json()) as Row[];
 }
@@ -176,7 +178,7 @@ function normalize(src: SingleSource, r: Row): Proceso {
   };
 }
 
-async function querySource(src: SingleSource, f: Filters, offset: number, limit: number): Promise<Proceso[]> {
+async function querySource(src: SingleSource, f: Filters, offset: number, limit: number, revalidate?: number): Promise<Proceso[]> {
   const c = DATASETS[src];
   const p = new URLSearchParams({
     $order: `${c.fecha} DESC`,
@@ -185,7 +187,7 @@ async function querySource(src: SingleSource, f: Filters, offset: number, limit:
   });
   const w = where(src, f);
   if (w) p.set("$where", w);
-  const rows = await getJson(`${BASE}/${c.id}.json?${p}`);
+  const rows = await getJson(`${BASE}/${c.id}.json?${p}`, revalidate);
   return rows.map((r) => normalize(src, r));
 }
 
@@ -194,12 +196,13 @@ export interface SearchResult {
   hasMore: boolean;
 }
 
-export async function search(f: Filters, page = 0, pageSize = 20): Promise<SearchResult> {
+// `revalidate` (segundos) permite que páginas estáticas con renovación periódica (portada, guías) usen la caché de Next
+export async function search(f: Filters, page = 0, pageSize = 20, revalidate?: number): Promise<SearchResult> {
   // El filtro por valor solo aplica a SECOP II (su valor es numérico y confiable)
   const porValor = f.valorMin != null || f.valorMax != null || !!f.abiertos;
   const sources: SingleSource[] = porValor ? ["secop2"] : f.source === "both" ? ["secop2", "secop1"] : [f.source];
   const per = sources.length === 2 ? Math.ceil(pageSize / 2) : pageSize;
-  const parts = await Promise.all(sources.map((s) => querySource(s, f, page * per, per)));
+  const parts = await Promise.all(sources.map((s) => querySource(s, f, page * per, per, revalidate)));
   const items = parts.flat().sort((a, b) => (b.fecha ?? "").localeCompare(a.fecha ?? ""));
   return { items, hasMore: parts.some((p) => p.length >= per) };
 }

@@ -28,7 +28,7 @@ export default async function GuiaPagina({ params }: { params: Promise<{ slug: s
   // Procesos abiertos de este sector (ejemplo en vivo); si falla la consulta, la guía se muestra igual
   let procesos: Proceso[] = [];
   try {
-    const r = await search(parseFilters(new URLSearchParams({ q: g.q, abiertos: "1", source: "secop2" })), 0, 5);
+    const r = await search(parseFilters(new URLSearchParams({ q: g.q, abiertos: "1", source: "secop2" })), 0, 5, 3600);
     procesos = r.items;
   } catch {}
 
