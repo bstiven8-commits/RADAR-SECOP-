@@ -147,6 +147,19 @@ export default function Buscador({
     }
   }, [auto, buscar]);
 
+  async function exportar() {
+    setError("");
+    if (!session) return setError("Registra tu correo arriba para exportar.");
+    const r = await fetch(`/api/export?${query(f)}`, { headers: { Authorization: `Bearer ${session.access_token}` } });
+    if (!r.ok) return setError((await r.json().catch(() => ({}))).error ?? "No se pudo exportar");
+    const url = URL.createObjectURL(await r.blob());
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `radar-secop-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   async function crearAlarma() {
     setAlarmMsg(null);
     if (!session) return setAlarmMsg({ ok: false, text: "Primero registra tu correo arriba para poder crear alarmas." });
@@ -283,6 +296,7 @@ export default function Buscador({
         <div className="resumen">
           <span>{items.length} {items.length === 1 ? "proceso" : "procesos"}{hasMore ? " o más" : ""}</span>
           <span className="muted">Los más recientes primero</span>
+          <button type="button" className="ghost" onClick={exportar} title="Planes Pro y Business">Exportar a Excel</button>
         </div>
       )}
 
