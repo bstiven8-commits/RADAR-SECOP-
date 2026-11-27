@@ -69,7 +69,9 @@ export const DATASETS = {
 type Row = Record<string, unknown>;
 
 const esc = (s: string) => s.replace(/'/g, "''");
-const str = (v: unknown) => (typeof v === "string" ? v : v == null ? "" : String(v));
+// Algunos textos de SECOP traen caracteres de control o de reemplazo (guion mal codificado): se muestran como guion
+const limpiar = (s: string) => s.replace(/[\u0080-\u009F\uFFFD]/g, "–");
+const str = (v: unknown) => limpiar(typeof v === "string" ? v : v == null ? "" : String(v));
 const num = (v: unknown) => {
   const n = Number(v);
   return Number.isFinite(n) && n > 0 ? n : null;

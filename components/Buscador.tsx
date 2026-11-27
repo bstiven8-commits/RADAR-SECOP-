@@ -37,7 +37,11 @@ const SECTORES: { nombre: string; q: string }[] = [
 
 const cop = (n: number | null) =>
   n == null ? "—" : new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
-const dia = (s: string | null) => (s ? s.slice(0, 10) : "—");
+const dia = (s: string | null) => {
+  if (!s) return "—";
+  const d = new Date(`${s.slice(0, 10)}T12:00:00`);
+  return isNaN(d.getTime()) ? s.slice(0, 10) : d.toLocaleDateString("es-CO", { day: "numeric", month: "short", year: "numeric" });
+};
 
 // Solo para el indicador visual del estado; el texto del estado siempre se muestra
 function tonoEstado(e: string | null): "abierto" | "cerrado" | "adjudicado" | "" {
