@@ -274,3 +274,6 @@ button:active:not(:disabled), .chip-btn:active { scale: .97; }
 .fila:nth-child(2n) { animation-delay: .04s; }
 .fila:nth-child(3n) { animation-delay: .08s; }
 .fila:nth-child(4n) { animation-delay: .12s; }
+
+.otras-guias { list-style: none; display: flex; flex-wrap: wrap; gap: 8px 16px; padding-left: 0 !important; }
+.otras-guias li { margin: 0; }

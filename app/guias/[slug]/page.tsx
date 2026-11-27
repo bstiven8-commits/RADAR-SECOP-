@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Logo } from "@/components/Icons";
+import JsonLd from "@/components/JsonLd";
 import { AVISO, GUIAS, PASOS_BASE, guiaPor } from "@/lib/guias";
 import { parseFilters, search, type Proceso } from "@/lib/secop";
 
@@ -33,8 +34,32 @@ export default async function GuiaPagina({ params }: { params: Promise<{ slug: s
   } catch {}
 
   const buscar = `/?q=${encodeURIComponent(g.q)}`;
+  const base = (process.env.NEXT_PUBLIC_APP_URL ?? "https://alertasecop.com").replace(/\/$/, "");
+  const otras = GUIAS.filter((x) => x.slug !== g.slug);
   return (
     <div className="wrap">
+      <JsonLd
+        data={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: g.titulo,
+            description: g.resumen,
+            inLanguage: "es-CO",
+            mainEntityOfPage: `${base}/guias/${g.slug}`,
+            publisher: { "@type": "Organization", name: NOMBRE, url: base },
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Inicio", item: base },
+              { "@type": "ListItem", position: 2, name: "Guías", item: `${base}/guias` },
+              { "@type": "ListItem", position: 3, name: g.nombre, item: `${base}/guias/${g.slug}` },
+            ],
+          },
+        ]}
+      />
       <header className="top">
         <Link href="/" className="brand" aria-label="Radar SECOP, inicio"><Logo /><span>{NOMBRE}</span></Link>
       </header>
@@ -78,6 +103,12 @@ export default async function GuiaPagina({ params }: { params: Promise<{ slug: s
             ))}
           </ul>
         )}
+
+        <h2 className="sec">Otras guías</h2>
+        <ul className="otras-guias">
+          {otras.map((x) => <li key={x.slug}><Link href={`/guias/${x.slug}`}>{x.nombre}</Link></li>)}
+          <li><Link href="/departamentos">Procesos por departamento</Link></li>
+        </ul>
 
         <p className="muted pie">{AVISO}</p>
       </article>

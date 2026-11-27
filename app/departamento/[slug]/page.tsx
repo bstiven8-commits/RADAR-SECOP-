@@ -19,11 +19,13 @@ async function nombreDe(slug: string): Promise<string | null> {
 }
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const nombre = await nombreDe((await params).slug);
+  const slug = (await params).slug;
+  const nombre = await nombreDe(slug);
   if (!nombre) return { title: `Departamentos — ${NOMBRE}` };
   return {
-    title: `Contratación pública en ${nombre}: procesos SECOP abiertos — ${NOMBRE}`,
-    description: `Procesos de contratación pública de entidades de ${nombre} publicados en SECOP II. Filtra por palabra clave, valor y modalidad, y crea una alarma por correo.`,
+    title: `Contratos del Estado en ${nombre} — ${NOMBRE}`,
+    description: `Procesos de contratación pública abiertos en ${nombre}, publicados en SECOP II. Filtra por palabra clave, valor y modalidad, y crea una alarma por correo.`,
+    alternates: { canonical: `/departamento/${slug}` },
   };
 }
 

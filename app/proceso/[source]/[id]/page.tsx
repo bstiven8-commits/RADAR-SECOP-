@@ -27,7 +27,14 @@ async function cargar(params: Params) {
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const d = await cargar(params);
-  return { title: d ? `${d.proceso.objeto.slice(0, 70)} — ${NOMBRE}` : `Proceso — ${NOMBRE}` };
+  if (!d) return { title: `Proceso — ${NOMBRE}`, robots: { index: false } };
+  const { source, id } = await params;
+  const p = d.proceso;
+  return {
+    title: `${p.objeto.slice(0, 70)} — ${NOMBRE}`,
+    description: `${p.entidad}${p.modalidad ? ` · ${p.modalidad}` : ""}: ${p.objeto.slice(0, 120)}`.slice(0, 160),
+    alternates: { canonical: `/proceso/${source}/${id}` },
+  };
 }
 
 export default async function Detalle({ params }: { params: Params }) {
